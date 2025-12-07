@@ -2,6 +2,7 @@
 
 import type { ReactNode } from 'react';
 import { NavBar } from './NavBar';
+import { NotificationProvider } from './NotificationProvider';
 
 interface AppShellProps {
     children: ReactNode;
@@ -17,8 +18,10 @@ export function AppShell({ children }: AppShellProps) {
                 color: '#e5e7eb',
             }}
         >
-            <NavBar />
-            {children}
+            <NotificationProvider>
+                <NavBar />
+                {children}
+            </NotificationProvider>
         </div>
     );
 }
