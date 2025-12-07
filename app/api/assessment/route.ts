@@ -1,4 +1,6 @@
 import { NextResponse } from 'next/server';
+import { getPhq9Severity } from '@/lib/assessmentConfig';
+import { logEvent } from '@/lib/logger';
 
 export async function POST(req: Request) {
     try {
@@ -10,7 +12,8 @@ export async function POST(req: Request) {
             const raw = body[`q${i}`];
 
             // Accept string or number, convert to number
-            const value = typeof raw === 'string' ? parseInt(raw, 10) : Number(raw);
+            const value =
+                typeof raw === 'string' ? parseInt(raw, 10) : Number(raw);
 
             if (Number.isNaN(value)) {
                 return NextResponse.json(
@@ -24,22 +27,14 @@ export async function POST(req: Request) {
 
         const totalScore = answers.reduce((sum, v) => sum + v, 0);
 
-        let severity = 'Minimal';
+        const severity = getPhq9Severity(totalScore);
 
-        if (totalScore <= 4) {
-            severity = 'Minimal';
-        } else if (totalScore <= 9) {
-            severity = 'Mild';
-        } else if (totalScore <= 14) {
-            severity = 'Moderate';
-        } else if (totalScore <= 19) {
-            severity = 'Moderately severe';
-        } else {
-            severity = 'Severe';
-        }
+        logEvent('assessment_submitted', {
+            totalScore,
+            severity,
+        });
 
-        // For now, we DO NOT save to any database.
-        // We just compute and return the result.
+        // No DB write yet – this is a stateless demo endpoint.
         return NextResponse.json(
             {
                 totalScore,
@@ -48,7 +43,11 @@ export async function POST(req: Request) {
             { status: 200 }
         );
     } catch (error) {
-        console.error('Error in /api/assessment:', error);
+        logEvent('assessment_error', {
+            error:
+                error instanceof Error ? error.message : 'Unknown error in /api/assessment',
+        });
+
         return NextResponse.json(
             { error: 'Internal server error' },
             { status: 500 }
