@@ -54,9 +54,10 @@ export default function BookingPage() {
                 minHeight: '100vh',
                 display: 'flex',
                 justifyContent: 'center',
-                alignItems: 'flex-start',
+                alignItems: 'center',
                 padding: '2rem',
-                backgroundColor: '#020617',
+                background:
+                    'radial-gradient(circle at top, #1d4ed8 0, #020617 40%, #000 100%)',
                 color: '#e5e7eb',
             }}
         >
@@ -64,10 +65,11 @@ export default function BookingPage() {
                 style={{
                     maxWidth: '700px',
                     width: '100%',
-                    backgroundColor: '#020617',
+                    backgroundColor: 'rgba(15,23,42,0.9)',
+                    borderRadius: '1.5rem',
                     padding: '2rem',
-                    borderRadius: '1rem',
-                    boxShadow: '0 0 30px rgba(15,23,42,0.8)',
+                    boxShadow: '0 0 40px rgba(15,23,42,0.9)',
+                    border: '1px solid rgba(148,163,184,0.4)',
                 }}
             >
                 <h1 style={{ fontSize: '1.8rem', marginBottom: '0.5rem' }}>
