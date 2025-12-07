@@ -43,7 +43,9 @@ function getMessage(severity: string | null) {
     return null;
 }
 
-export default function ResultPage() {
+import { Suspense } from 'react';
+
+function ResultContent() {
     const searchParams = useSearchParams();
     const router = useRouter();
 
@@ -57,6 +59,189 @@ export default function ResultPage() {
     const hasValidData = score !== null && !Number.isNaN(score) && !!severity;
 
     return (
+        <div
+            style={{
+                maxWidth: '750px',
+                width: '100%',
+                backgroundColor: 'rgba(15,23,42,0.9)',
+                borderRadius: '1.5rem',
+                padding: '2rem',
+                boxShadow: '0 0 40px rgba(15,23,42,0.9)',
+                border: '1px solid rgba(148,163,184,0.4)',
+            }}
+        >
+            <h1 style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>
+                Your Assessment Result
+            </h1>
+
+            {!hasValidData ? (
+                <div>
+                    <p style={{ marginBottom: '1rem' }}>
+                        We could not find your assessment data. Please take the
+                        self-assessment again.
+                    </p>
+                    <Link
+                        href="/assessment"
+                        style={{
+                            padding: '0.7rem 1.4rem',
+                            borderRadius: '999px',
+                            backgroundColor: '#3b82f6',
+                            color: '#f9fafb',
+                            textDecoration: 'none',
+                            fontSize: '0.95rem',
+                        }}
+                    >
+                        Take Self-Assessment
+                    </Link>
+                </div>
+            ) : (
+                <>
+                    <div
+                        style={{
+                            display: 'flex',
+                            flexWrap: 'wrap',
+                            gap: '1.5rem',
+                            marginBottom: '1.5rem',
+                        }}
+                    >
+                        <div>
+                            <p
+                                style={{
+                                    fontSize: '0.85rem',
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '0.12em',
+                                    color: '#9ca3af',
+                                    marginBottom: '0.25rem',
+                                }}
+                            >
+                                Total Score
+                            </p>
+                            <p style={{ fontSize: '2.4rem', fontWeight: 700 }}>{score}</p>
+                        </div>
+                        <div>
+                            <p
+                                style={{
+                                    fontSize: '0.85rem',
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '0.12em',
+                                    color: '#9ca3af',
+                                    marginBottom: '0.25rem',
+                                }}
+                            >
+                                Severity
+                            </p>
+                            <p
+                                style={{
+                                    fontSize: '1.2rem',
+                                    fontWeight: 600,
+                                }}
+                            >
+                                {severity}
+                            </p>
+                        </div>
+                    </div>
+
+                    {message && (
+                        <div
+                            style={{
+                                marginBottom: '1.5rem',
+                                padding: '1rem 1.25rem',
+                                borderRadius: '1rem',
+                                backgroundColor: 'rgba(37,99,235,0.15)',
+                                border: '1px solid rgba(59,130,246,0.4)',
+                            }}
+                        >
+                            <p
+                                style={{
+                                    fontWeight: 600,
+                                    marginBottom: '0.3rem',
+                                }}
+                            >
+                                {message.heading}
+                            </p>
+                            <p
+                                style={{
+                                    fontSize: '0.95rem',
+                                    margin: 0,
+                                    color: '#dbeafe',
+                                }}
+                            >
+                                {message.body}
+                            </p>
+                        </div>
+                    )}
+
+                    <div
+                        style={{
+                            display: 'flex',
+                            flexWrap: 'wrap',
+                            gap: '1rem',
+                            marginBottom: '1rem',
+                        }}
+                    >
+                        <Link
+                            href="/booking"
+                            style={{
+                                padding: '0.8rem 1.6rem',
+                                borderRadius: '999px',
+                                backgroundColor: '#22c55e',
+                                color: '#022c22',
+                                textDecoration: 'none',
+                                fontWeight: 600,
+                                fontSize: '0.95rem',
+                            }}
+                        >
+                            Book a Counselor (Demo)
+                        </Link>
+                        <button
+                            type="button"
+                            onClick={() => router.push('/assessment')}
+                            style={{
+                                padding: '0.8rem 1.6rem',
+                                borderRadius: '999px',
+                                backgroundColor: 'transparent',
+                                border: '1px solid rgba(148,163,184,0.9)',
+                                color: '#e5e7eb',
+                                fontWeight: 500,
+                                fontSize: '0.95rem',
+                                cursor: 'pointer',
+                            }}
+                        >
+                            Retake Assessment
+                        </button>
+                        <Link
+                            href="/"
+                            style={{
+                                padding: '0.8rem 1.4rem',
+                                borderRadius: '999px',
+                                textDecoration: 'none',
+                                fontSize: '0.9rem',
+                                color: '#9ca3af',
+                            }}
+                        >
+                            Back to Home
+                        </Link>
+                    </div>
+
+                    <p
+                        style={{
+                            fontSize: '0.8rem',
+                            color: '#9ca3af',
+                        }}
+                    >
+                        This is a prototype for educational purposes. It does not provide
+                        a medical diagnosis. If you ever feel unsafe or have thoughts of
+                        self-harm, please reach out to a trusted person, counselor, or
+                        emergency services immediately.
+                    </p>
+                </>
+            )}
+        </div>
+    );
+}
+
+export default function ResultPage() {
+    return (
         <main
             style={{
                 minHeight: '100vh',
@@ -69,184 +254,9 @@ export default function ResultPage() {
                 color: '#e5e7eb',
             }}
         >
-            <div
-                style={{
-                    maxWidth: '750px',
-                    width: '100%',
-                    backgroundColor: 'rgba(15,23,42,0.9)',
-                    borderRadius: '1.5rem',
-                    padding: '2rem',
-                    boxShadow: '0 0 40px rgba(15,23,42,0.9)',
-                    border: '1px solid rgba(148,163,184,0.4)',
-                }}
-            >
-                <h1 style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>
-                    Your Assessment Result
-                </h1>
-
-                {!hasValidData ? (
-                    <div>
-                        <p style={{ marginBottom: '1rem' }}>
-                            We could not find your assessment data. Please take the
-                            self-assessment again.
-                        </p>
-                        <Link
-                            href="/assessment"
-                            style={{
-                                padding: '0.7rem 1.4rem',
-                                borderRadius: '999px',
-                                backgroundColor: '#3b82f6',
-                                color: '#f9fafb',
-                                textDecoration: 'none',
-                                fontSize: '0.95rem',
-                            }}
-                        >
-                            Take Self-Assessment
-                        </Link>
-                    </div>
-                ) : (
-                    <>
-                        <div
-                            style={{
-                                display: 'flex',
-                                flexWrap: 'wrap',
-                                gap: '1.5rem',
-                                marginBottom: '1.5rem',
-                            }}
-                        >
-                            <div>
-                                <p
-                                    style={{
-                                        fontSize: '0.85rem',
-                                        textTransform: 'uppercase',
-                                        letterSpacing: '0.12em',
-                                        color: '#9ca3af',
-                                        marginBottom: '0.25rem',
-                                    }}
-                                >
-                                    Total Score
-                                </p>
-                                <p style={{ fontSize: '2.4rem', fontWeight: 700 }}>{score}</p>
-                            </div>
-                            <div>
-                                <p
-                                    style={{
-                                        fontSize: '0.85rem',
-                                        textTransform: 'uppercase',
-                                        letterSpacing: '0.12em',
-                                        color: '#9ca3af',
-                                        marginBottom: '0.25rem',
-                                    }}
-                                >
-                                    Severity
-                                </p>
-                                <p
-                                    style={{
-                                        fontSize: '1.2rem',
-                                        fontWeight: 600,
-                                    }}
-                                >
-                                    {severity}
-                                </p>
-                            </div>
-                        </div>
-
-                        {message && (
-                            <div
-                                style={{
-                                    marginBottom: '1.5rem',
-                                    padding: '1rem 1.25rem',
-                                    borderRadius: '1rem',
-                                    backgroundColor: 'rgba(37,99,235,0.15)',
-                                    border: '1px solid rgba(59,130,246,0.4)',
-                                }}
-                            >
-                                <p
-                                    style={{
-                                        fontWeight: 600,
-                                        marginBottom: '0.3rem',
-                                    }}
-                                >
-                                    {message.heading}
-                                </p>
-                                <p
-                                    style={{
-                                        fontSize: '0.95rem',
-                                        margin: 0,
-                                        color: '#dbeafe',
-                                    }}
-                                >
-                                    {message.body}
-                                </p>
-                            </div>
-                        )}
-
-                        <div
-                            style={{
-                                display: 'flex',
-                                flexWrap: 'wrap',
-                                gap: '1rem',
-                                marginBottom: '1rem',
-                            }}
-                        >
-                            <Link
-                                href="/booking"
-                                style={{
-                                    padding: '0.8rem 1.6rem',
-                                    borderRadius: '999px',
-                                    backgroundColor: '#22c55e',
-                                    color: '#022c22',
-                                    textDecoration: 'none',
-                                    fontWeight: 600,
-                                    fontSize: '0.95rem',
-                                }}
-                            >
-                                Book a Counselor (Demo)
-                            </Link>
-                            <button
-                                type="button"
-                                onClick={() => router.push('/assessment')}
-                                style={{
-                                    padding: '0.8rem 1.6rem',
-                                    borderRadius: '999px',
-                                    backgroundColor: 'transparent',
-                                    border: '1px solid rgba(148,163,184,0.9)',
-                                    color: '#e5e7eb',
-                                    fontWeight: 500,
-                                    fontSize: '0.95rem',
-                                    cursor: 'pointer',
-                                }}
-                            >
-                                Retake Assessment
-                            </button>
-                            <Link
-                                href="/"
-                                style={{
-                                    padding: '0.8rem 1.4rem',
-                                    borderRadius: '999px',
-                                    textDecoration: 'none',
-                                    fontSize: '0.9rem',
-                                    color: '#9ca3af',
-                                }}
-                            >
-                                Back to Home
-                            </Link>
-                        </div>
-
-                        <p
-                            style={{
-                                fontSize: '0.8rem',
-                                color: '#9ca3af',
-                            }}
-                        >
-                            This is a prototype for educational purposes. It does not provide
-                            a medical diagnosis. If you ever feel unsafe or have thoughts of
-                            self-harm, please reach out to a trusted person, counselor, or
-                            emergency services immediately.
-                        </p>
-                    </>
-                )}
-            </div>
+            <Suspense fallback={<div>Loading result...</div>}>
+                <ResultContent />
+            </Suspense>
         </main>
     );
 }
