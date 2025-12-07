@@ -41,7 +41,6 @@ export default function AssessmentPage() {
 
         try {
             const payload: Record<string, number> = {};
-
             for (let i = 0; i < answers.length; i++) {
                 payload[`q${i + 1}`] = answers[i];
             }
@@ -59,7 +58,6 @@ export default function AssessmentPage() {
             }
 
             const data = await res.json();
-
             const score = data.totalScore;
             const severity = data.severity;
 
@@ -82,10 +80,9 @@ export default function AssessmentPage() {
                 minHeight: '100vh',
                 display: 'flex',
                 justifyContent: 'center',
-                alignItems: 'center',
+                alignItems: 'flex-start',
                 padding: '2rem',
-                background:
-                    'radial-gradient(circle at top, #1d4ed8 0, #020617 40%, #000 100%)',
+                backgroundColor: '#0f172a',
                 color: '#e5e7eb',
             }}
         >
@@ -93,11 +90,10 @@ export default function AssessmentPage() {
                 style={{
                     maxWidth: '800px',
                     width: '100%',
-                    backgroundColor: 'rgba(15,23,42,0.9)',
-                    borderRadius: '1.5rem',
+                    backgroundColor: '#020617',
                     padding: '2rem',
-                    boxShadow: '0 0 40px rgba(15,23,42,0.9)',
-                    border: '1px solid rgba(148,163,184,0.4)',
+                    borderRadius: '1rem',
+                    boxShadow: '0 0 30px rgba(15,23,42,0.8)',
                 }}
             >
                 <h1 style={{ fontSize: '1.8rem', marginBottom: '0.5rem' }}>
