@@ -1,0 +1,32 @@
+generator client {
+  provider = "prisma-client-js"
+  engineType = "library"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Assessment {
+  id          Int      @id @default(autoincrement())
+  q1          Int
+  q2          Int
+  q3          Int
+  q4          Int
+  q5          Int
+  q6          Int
+  q7          Int
+  q8          Int
+  q9          Int
+  totalScore  Int
+  severity    String
+  createdAt   DateTime @default(now())
+}
+
+model Booking {
+  id        Int      @id @default(autoincrement())
+  slotTime  String
+  status    String
+  createdAt DateTime @default(now())
+}
