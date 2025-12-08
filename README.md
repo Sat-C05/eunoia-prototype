@@ -1,6 +1,6 @@
 # 🌿 Eunoia — A Campus-First Digital Mental Health Companion
 
-**Live Deployment:** *Add your Vercel URL here*
+**Live Deployment:** *(https://eunoia-prototype-7wycjuh04-satviks-projects-8dfddd80.vercel.app/admin)*
 
 Eunoia is a modern mental-health support platform designed specifically for college students. It brings together validated self-assessments, mood tracking, counseling bookings, and a central resource hub — all wrapped in a calming, minimal, glass-morphism UI.
 
