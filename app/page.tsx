@@ -5,131 +5,80 @@ import Link from 'next/link';
 
 export default function HomePage() {
   return (
-    <main
-      style={{
-        minHeight: '100vh',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        padding: '2rem',
-        background:
-          'radial-gradient(circle at top, #1d4ed8 0, #020617 40%, #000 100%)',
-        color: '#e5e7eb',
-      }}
-    >
-      <div
-        style={{
-          maxWidth: '800px',
-          width: '100%',
-          backgroundColor: 'rgba(15,23,42,0.9)',
-          borderRadius: '1.5rem',
-          padding: '2rem',
-          boxShadow: '0 0 40px rgba(15,23,42,0.9)',
-          border: '1px solid rgba(148,163,184,0.4)',
-        }}
-      >
+    <div className="flex flex-col items-center justify-center py-10 md:py-20">
+      <div className="w-full max-w-4xl rounded-3xl border border-neutral-800 bg-neutral-900/60 p-12 shadow-2xl backdrop-blur-md text-center relative overflow-hidden">
 
+        {/* Background Gradients */}
+        <div className="absolute top-0 right-0 -mr-20 -mt-20 w-80 h-80 bg-purple-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-80 h-80 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
 
-        <h1
-          style={{
-            fontSize: '2.3rem',
-            fontWeight: 700,
-            marginBottom: '0.5rem',
-          }}
-        >
-          Eunoia
-        </h1>
+        <div className="relative z-10">
+          <h1 className="mb-6 text-5xl md:text-6xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-blue-200 via-purple-200 to-pink-200">
+            Find Your Balance.
+          </h1>
 
-        <p
-          style={{
-            fontSize: '1rem',
-            color: '#cbd5f5',
-            marginBottom: '1.5rem',
-            maxWidth: '32rem',
-          }}
-        >
-          A campus-first digital mental health companion for students, designed
-          for privacy, early support, and easy access to professional help.
-        </p>
+          <p className="mx-auto mb-10 max-w-xl text-lg text-neutral-400 leading-relaxed">
+            Eunoia is your confidential campus companion. Assess your mental well-being, log your mood, and connect with support—all in one private space.
+          </p>
 
-        <div
-          style={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            gap: '1rem',
-            marginBottom: '1.5rem',
-          }}
-        >
-          <Link
-            href="/assessment"
-            style={{
-              padding: '0.8rem 1.6rem',
-              borderRadius: '999px',
-              backgroundColor: '#3b82f6',
-              color: '#f9fafb',
-              textDecoration: 'none',
-              fontWeight: 500,
-              fontSize: '0.95rem',
-            }}
-          >
-            Take Self-Assessment
-          </Link>
-          <Link
-            href="/booking"
-            style={{
-              padding: '0.8rem 1.6rem',
-              borderRadius: '999px',
-              backgroundColor: 'transparent',
-              border: '1px solid rgba(148,163,184,0.9)',
-              color: '#e5e7eb',
-              textDecoration: 'none',
-              fontWeight: 500,
-              fontSize: '0.95rem',
-            }}
-          >
-            Book a Counselor (Demo)
-          </Link>
-          <Link
-            href="/forum"
-            style={{
-              padding: '0.8rem 1.6rem',
-              borderRadius: '999px',
-              backgroundColor: 'transparent',
-              border: '1px solid rgba(148,163,184,0.9)',
-              color: '#e5e7eb',
-              textDecoration: 'none',
-              fontWeight: 500,
-              fontSize: '0.95rem',
-            }}
-          >
-            Peer Support (Coming Soon)
-          </Link>
-        </div>
+          <div className="mb-12 flex flex-wrap justify-center gap-4">
+            <Link
+              href="/assessment"
+              className="group relative inline-flex items-center justify-center rounded-full bg-neutral-100 px-8 py-3.5 text-base font-semibold text-neutral-900 transition-all hover:bg-white hover:scale-105 hover:shadow-[0_0_20px_rgba(255,255,255,0.3)]"
+            >
+              Start Self-Assessment
+              <svg className="ml-2 w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+              </svg>
+            </Link>
+          </div>
 
-        <div
-          style={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            gap: '1rem',
-            fontSize: '0.85rem',
-            color: '#9ca3af',
-          }}
-        >
-          <div>
-            <strong style={{ color: '#e5e7eb' }}>Privacy-first</strong>
-            <p style={{ margin: 0 }}>
-              Responses stay on this demo device. No real data is stored.
+          <div className="grid gap-6 md:grid-cols-3 text-left">
+            <div className="rounded-2xl border border-neutral-800 bg-neutral-950/50 p-6 transition-colors hover:border-neutral-700">
+              <div className="w-10 h-10 rounded-lg bg-purple-500/10 flex items-center justify-center mb-4 text-purple-400">
+                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <strong className="block mb-2 text-neutral-200 font-semibold">Validated Tools</strong>
+              <p className="text-sm text-neutral-400 leading-relaxed">
+                Use clinically-backed screenings like PHQ-9 and GAD-7 to understand your symptoms.
+              </p>
+            </div>
+
+            <div className="rounded-2xl border border-neutral-800 bg-neutral-950/50 p-6 transition-colors hover:border-neutral-700">
+              <div className="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center mb-4 text-blue-400">
+                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+              </div>
+              <strong className="block mb-2 text-neutral-200 font-semibold">Privacy First</strong>
+              <p className="text-sm text-neutral-400 leading-relaxed">
+                Your data stays local. We prioritize your anonymity and data security above all.
+              </p>
+            </div>
+
+            <div className="rounded-2xl border border-neutral-800 bg-neutral-950/50 p-6 transition-colors hover:border-neutral-700">
+              <div className="w-10 h-10 rounded-lg bg-pink-500/10 flex items-center justify-center mb-4 text-pink-400">
+                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                </svg>
+              </div>
+              <strong className="block mb-2 text-neutral-200 font-semibold">Easy Support</strong>
+              <p className="text-sm text-neutral-400 leading-relaxed">
+                Book appointments or find resources instantly when you need help.
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-10 py-4 border-t border-neutral-800/50">
+            <p className="text-xs text-neutral-500">
+              ⚠️ For urgent help, please contact emergency services or your campus crisis line.
             </p>
           </div>
-          <div>
-            <strong style={{ color: '#e5e7eb' }}>Not a diagnosis</strong>
-            <p style={{ margin: 0 }}>
-              This tool offers guidance only. For urgent help, contact a
-              professional.
-            </p>
-          </div>
+
         </div>
       </div>
-    </main>
+    </div>
   );
 }

@@ -1,55 +1,60 @@
-import { NextResponse } from 'next/server';
-import { getPhq9Severity } from '@/lib/assessmentConfig';
-import { logEvent } from '@/lib/logger';
+import { NextRequest, NextResponse } from "next/server";
+import {
+    getSeverityForAssessment,
+    type AssessmentType,
+} from "@/lib/assessmentConfig";
+import { logEvent } from "@/lib/logger";
+import { prisma } from "@/lib/prisma";
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
     try {
         const body = await req.json();
 
-        const answers: number[] = [];
-
-        for (let i = 1; i <= 9; i++) {
-            const raw = body[`q${i}`];
-
-            // Accept string or number, convert to number
-            const value =
-                typeof raw === 'string' ? parseInt(raw, 10) : Number(raw);
-
-            if (Number.isNaN(value)) {
-                return NextResponse.json(
-                    { error: `Invalid value for q${i}` },
-                    { status: 400 }
-                );
+        // Support prompt's array style inputs
+        // answers as before
+        let answers: number[] = [];
+        if (Array.isArray(body.answers)) {
+            answers = body.answers.map((v: unknown) => Number(v) || 0);
+        } else {
+            // Fallback for current frontend which sends q1..q9
+            for (let i = 1; i <= 9; i++) {
+                // We only push if property exists to avoid pushing 0s for missing optional GAD questions etc
+                // But for PHQ9 we expect 9.
+                const val = body[`q${i}`];
+                if (val !== undefined) {
+                    answers.push(Number(val) || 0);
+                }
             }
-
-            answers.push(value);
         }
 
-        const totalScore = answers.reduce((sum, v) => sum + v, 0);
+        const totalScore = answers.reduce((sum, val) => sum + val, 0);
 
-        const severity = getPhq9Severity(totalScore);
+        const requestedType = (body.assessmentType || body.type) as AssessmentType | undefined;
+        const assessmentType: AssessmentType =
+            requestedType === "GAD7" || requestedType === "PHQ9"
+                ? requestedType
+                : "PHQ9";
 
-        logEvent('assessment_submitted', {
-            totalScore,
-            severity,
-        });
+        const severity = getSeverityForAssessment(assessmentType, totalScore);
 
-        // No DB write yet – this is a stateless demo endpoint.
-        return NextResponse.json(
-            {
+        // Save to DB (SQLite) - rawAnswers is a String in the schema
+        await prisma.assessment.create({
+            data: {
+                userId: body.userId ?? null,
+                assessmentType,
                 totalScore,
                 severity,
+                rawAnswers: JSON.stringify(answers),
             },
-            { status: 200 }
-        );
-    } catch (error) {
-        logEvent('assessment_error', {
-            error:
-                error instanceof Error ? error.message : 'Unknown error in /api/assessment',
         });
 
+        logEvent("assessment_submitted", { totalScore, severity, assessmentType });
+
+        return NextResponse.json({ totalScore, severity, assessmentType });
+    } catch (error) {
+        logEvent("assessment_error", { error: (error as Error).message });
         return NextResponse.json(
-            { error: 'Internal server error' },
+            { error: "Failed to submit assessment" },
             { status: 500 }
         );
     }

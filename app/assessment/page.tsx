@@ -1,196 +1,250 @@
-'use client';
+"use client";
 
-import { useState, FormEvent } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import {
+  PHQ9_QUESTIONS,
+  GAD7_QUESTIONS,
+  type AssessmentType,
+} from "@/lib/assessmentConfig";
+import { useNotifications } from "@/components/NotificationProvider";
+import { getOrCreateClientUserId } from "@/lib/clientUserId";
 
-const QUESTIONS = [
-  'Little interest or pleasure in doing things',
-  'Feeling down, depressed, or hopeless',
-  'Trouble falling or staying asleep, or sleeping too much',
-  'Feeling tired or having little energy',
-  'Poor appetite or overeating',
-  'Feeling bad about yourself — or that you are a failure or have let yourself or your family down',
-  'Trouble concentrating on things, such as reading or watching television',
-  'Moving or speaking so slowly that other people could have noticed? Or the opposite — being so fidgety or restless that you have been moving around a lot more than usual',
-  'Thoughts that you would be better off dead, or of hurting yourself in some way',
+const SCALE_OPTIONS = [
+  { value: 0, label: "Not at all" },
+  { value: 1, label: "Several days" },
+  { value: 2, label: "More than half the days" },
+  { value: 3, label: "Nearly every day" },
 ];
 
-const OPTIONS = [
-  { label: '0 - Not at all', value: 0 },
-  { label: '1 - Several days', value: 1 },
-  { label: '2 - More than half the days', value: 2 },
-  { label: '3 - Nearly every day', value: 3 },
-];
+
+
+const ASSESSMENT_META: Record<
+  AssessmentType,
+  { title: string; subtitle: string }
+> = {
+  PHQ9: {
+    title: "PHQ-9 Depression Screening",
+    subtitle:
+      "A brief, clinically validated questionnaire to screen for symptoms of depression.",
+  },
+  GAD7: {
+    title: "GAD-7 Anxiety Screening",
+    subtitle:
+      "A short, validated tool to screen for symptoms of generalized anxiety.",
+  },
+};
 
 export default function AssessmentPage() {
   const router = useRouter();
-  const [answers, setAnswers] = useState<number[]>(Array(9).fill(0));
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const { notify } = useNotifications();
+  const [assessmentType, setAssessmentType] = useState<AssessmentType>("PHQ9");
+  const [answers, setAnswers] = useState<number[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [userId, setUserId] = useState<string>("");
 
-  const handleChange = (qIndex: number, value: number) => {
-    const next = [...answers];
-    next[qIndex] = value;
-    setAnswers(next);
-  };
+  useEffect(() => {
+    setUserId(getOrCreateClientUserId());
+  }, []);
 
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+  const questions =
+    assessmentType === "PHQ9" ? PHQ9_QUESTIONS : GAD7_QUESTIONS;
+
+  // ensure answers array is sized correctly
+  const normalizedAnswers = questions.map((_, index) => answers[index] ?? 0);
+
+  function handleSelectType(type: AssessmentType) {
+    setAssessmentType(type);
+    setAnswers([]); // Reset answers when switching types
+  }
+
+  function setAnswer(index: number, value: number) {
+    setAnswers((prev) => {
+      const next = [...prev];
+      next[index] = value;
+      return next;
+    });
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setSubmitting(true);
-    setError(null);
 
     try {
-      const payload: Record<string, number> = {};
-      for (let i = 0; i < answers.length; i++) {
-        payload[`q${i + 1}`] = answers[i];
-      }
+      setIsSubmitting(true);
 
-      const res = await fetch('/api/assessment', {
-        method: 'POST',
+      const res = await fetch("/api/assessment", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({
+          assessmentType,
+          answers: normalizedAnswers,
+          userId,
+        }),
       });
 
       if (!res.ok) {
-        throw new Error('Request failed');
+        const data = await res.json().catch(() => null);
+        const message = data?.error ?? "Failed to submit assessment";
+        notify("error", message);
+        return;
       }
 
       const data = await res.json();
-      const score = data.totalScore;
-      const severity = data.severity;
 
-      router.push(
-        `/result?score=${encodeURIComponent(
-          score
-        )}&severity=${encodeURIComponent(severity)}`
-      );
-    } catch (err) {
-      console.error(err);
-      setError('An error occurred. Please try again.');
+      notify("success", "Assessment completed successfully.");
+
+      // Redirect to the result page with query params
+      const params = new URLSearchParams({
+        score: data.totalScore.toString(),
+        severity: data.severity,
+        type: data.assessmentType || assessmentType, // Pass type just in case we update result page later to use it
+      });
+
+      router.push(`/result?${params.toString()}`);
+
+    } catch (error) {
+      console.error(error);
+      notify("error", "Something went wrong while submitting assessment");
     } finally {
-      setSubmitting(false);
+      setIsSubmitting(false);
     }
-  };
+  }
 
   return (
-    <main
-      style={{
-        minHeight: '100vh',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'flex-start',
-        padding: '2rem',
-        backgroundColor: '#0f172a',
-        color: '#e5e7eb',
-      }}
-    >
-      <div
-        style={{
-          maxWidth: '800px',
-          width: '100%',
-          backgroundColor: '#020617',
-          padding: '2rem',
-          borderRadius: '1rem',
-          boxShadow: '0 0 30px rgba(15,23,42,0.8)',
-        }}
-      >
-        <h1 style={{ fontSize: '1.8rem', marginBottom: '0.5rem' }}>
-          PHQ-9 Self-Assessment
-        </h1>
-        <p style={{ marginBottom: '1rem', fontSize: '0.95rem', opacity: 0.8 }}>
-          This is a screening tool, not a diagnosis. If you are in crisis or
-          feel unsafe, please contact a professional or emergency services
-          immediately.
+    <div className="space-y-8 pb-10">
+      {/* Header */}
+      <header className="space-y-2">
+        <h1 className="text-2xl font-semibold text-neutral-100">Mental health assessments</h1>
+        <p className="text-sm text-neutral-400 max-w-xl">
+          Choose a screening tool and answer the questions honestly.
         </p>
+      </header>
 
-        <form onSubmit={handleSubmit}>
-          {QUESTIONS.map((q, idx) => (
-            <div
-              key={idx}
-              style={{
-                marginBottom: '1.5rem',
-                paddingBottom: '1rem',
-                borderBottom: '1px solid rgba(148,163,184,0.2)',
-              }}
-            >
-              <p
-                style={{
-                  marginBottom: '0.5rem',
-                  fontWeight: 500,
-                }}
-              >
-                {idx + 1}. {q}
-              </p>
-              <div
-                style={{
-                  display: 'flex',
-                  flexWrap: 'wrap',
-                  gap: '0.75rem',
-                }}
-              >
-                {OPTIONS.map((opt) => (
-                  <label
-                    key={opt.value}
-                    style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '0.4rem',
-                      fontSize: '0.9rem',
-                      backgroundColor:
-                        answers[idx] === opt.value
-                          ? 'rgba(59,130,246,0.2)'
-                          : 'rgba(15,23,42,0.8)',
-                      padding: '0.4rem 0.6rem',
-                      borderRadius: '999px',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    <input
-                      type="radio"
-                      name={`q${idx + 1}`}
-                      value={opt.value}
-                      checked={answers[idx] === opt.value}
-                      onChange={() => handleChange(idx, opt.value)}
-                    />
-                    {opt.label}
-                  </label>
-                ))}
-              </div>
-            </div>
-          ))}
-
-          {error && (
-            <p
-              style={{
-                color: '#f97373',
-                marginBottom: '1rem',
-                fontSize: '0.9rem',
-              }}
-            >
-              {error}
-            </p>
+      {/* Tool Picker */}
+      <section className="grid gap-4 sm:grid-cols-2">
+        <button
+          type="button"
+          onClick={() => handleSelectType("PHQ9")}
+          className={[
+            "group relative rounded-2xl border p-5 text-left transition-all duration-300",
+            assessmentType === "PHQ9"
+              ? "border-purple-500 bg-purple-900/20 shadow-[0_0_20px_rgba(168,85,247,0.15)]"
+              : "border-neutral-800 bg-neutral-900/60 text-neutral-400 hover:border-neutral-700 hover:bg-neutral-900/80",
+          ].join(" ")}
+        >
+          <div className={`font-medium text-base mb-1 ${assessmentType === "PHQ9" ? "text-purple-100" : "text-neutral-200"}`}>
+            PHQ-9 · Depression
+          </div>
+          <div className={`text-xs ${assessmentType === "PHQ9" ? "text-purple-300/80" : "text-neutral-500 group-hover:text-neutral-400"}`}>
+            Screens for symptoms of low mood and loss of interest.
+          </div>
+          {assessmentType === "PHQ9" && (
+            <div className="absolute top-5 right-5 h-2.5 w-2.5 rounded-full bg-purple-500 shadow-[0_0_10px_#a855f7]" />
           )}
+        </button>
 
-          <button
-            type="submit"
-            disabled={submitting}
-            style={{
-              backgroundColor: submitting ? '#4b5563' : '#3b82f6',
-              color: '#f9fafb',
-              padding: '0.7rem 1.5rem',
-              borderRadius: '999px',
-              border: 'none',
-              cursor: submitting ? 'not-allowed' : 'pointer',
-              fontWeight: 500,
-              fontSize: '0.95rem',
-            }}
-          >
-            {submitting ? 'Submitting...' : 'Submit Assessment'}
-          </button>
+        <button
+          type="button"
+          onClick={() => handleSelectType("GAD7")}
+          className={[
+            "group relative rounded-2xl border p-5 text-left transition-all duration-300",
+            assessmentType === "GAD7"
+              ? "border-blue-500 bg-blue-900/20 shadow-[0_0_20px_rgba(59,130,246,0.15)]"
+              : "border-neutral-800 bg-neutral-900/60 text-neutral-400 hover:border-neutral-700 hover:bg-neutral-900/80",
+          ].join(" ")}
+        >
+          <div className={`font-medium text-base mb-1 ${assessmentType === "GAD7" ? "text-blue-100" : "text-neutral-200"}`}>
+            GAD-7 · Anxiety
+          </div>
+          <div className={`text-xs ${assessmentType === "GAD7" ? "text-blue-300/80" : "text-neutral-500 group-hover:text-neutral-400"}`}>
+            Screens for symptoms of excessive worry and anxiety.
+          </div>
+          {assessmentType === "GAD7" && (
+            <div className="absolute top-5 right-5 h-2.5 w-2.5 rounded-full bg-blue-500 shadow-[0_0_10px_#3b82f6]" />
+          )}
+        </button>
+      </section>
+
+      {/* Form Area */}
+      <section className="rounded-2xl border border-neutral-800 bg-neutral-900/60 p-6 shadow-xl backdrop-blur-md md:p-8">
+        <form onSubmit={handleSubmit} className="space-y-8">
+          <div className="space-y-1 mb-8 border-b border-neutral-800 pb-6">
+            <h2 className="text-xl font-medium text-neutral-100">
+              {ASSESSMENT_META[assessmentType].title}
+            </h2>
+            <p className="text-sm text-neutral-400">
+              {ASSESSMENT_META[assessmentType].subtitle}
+            </p>
+          </div>
+
+          <p className={[
+            "rounded-lg border p-4 text-sm",
+            assessmentType === "PHQ9"
+              ? "border-purple-500/20 bg-purple-900/10 text-purple-200"
+              : "border-blue-500/20 bg-blue-900/10 text-blue-200"
+          ].join(" ")}>
+            Over the last 2 weeks, how often have you been bothered by the following problems?
+          </p>
+
+          <div className="space-y-6">
+            {questions.map((q, index) => (
+              <div
+                key={q.id}
+                className="space-y-3 rounded-xl border border-neutral-800/50 bg-neutral-950/30 p-4 transition-colors hover:border-neutral-700"
+              >
+                <div className="flex gap-3 text-sm font-medium text-neutral-200">
+                  <span className="text-neutral-500 min-w-[1.5rem] text-right">
+                    {index + 1}.
+                  </span>
+                  <span>{q.text}</span>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2 pl-9 sm:grid-cols-4">
+                  {SCALE_OPTIONS.map((opt) => {
+                    const selected = normalizedAnswers[index] === opt.value;
+                    const activeClasses = assessmentType === "PHQ9"
+                      ? "border-purple-500 bg-purple-600 text-white shadow-lg shadow-purple-900/20"
+                      : "border-blue-500 bg-blue-600 text-white shadow-lg shadow-blue-900/20";
+
+                    return (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        onClick={() => setAnswer(index, opt.value)}
+                        className={[
+                          "relative rounded-lg border px-2 py-3 text-xs font-medium transition-all duration-200",
+                          selected
+                            ? `${activeClasses} scale-[1.02]`
+                            : "border-neutral-800 bg-neutral-900/50 text-neutral-400 hover:border-neutral-600 hover:bg-neutral-800 hover:text-neutral-200",
+                        ].join(" ")}
+                      >
+                        {opt.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="flex justify-end pt-4">
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className={[
+                "inline-flex items-center justify-center rounded-lg px-8 py-3 text-sm font-medium text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg",
+                assessmentType === "PHQ9"
+                  ? "bg-purple-600 hover:bg-purple-500 hover:shadow-purple-900/20"
+                  : "bg-blue-600 hover:bg-blue-500 hover:shadow-blue-900/20"
+              ].join(" ")}
+            >
+              {isSubmitting ? "Calculating..." : "Submit Assessment"}
+            </button>
+          </div>
         </form>
-      </div>
-    </main>
+      </section>
+    </div>
   );
 }

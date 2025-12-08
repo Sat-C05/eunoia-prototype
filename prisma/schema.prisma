@@ -1,32 +1,42 @@
 generator client {
   provider = "prisma-client-js"
-  engineType = "library"
 }
 
 datasource db {
   provider = "sqlite"
-  url      = env("DATABASE_URL")
+  url      = "file:./dev.db"
 }
 
 model Assessment {
-  id          Int      @id @default(autoincrement())
-  q1          Int
-  q2          Int
-  q3          Int
-  q4          Int
-  q5          Int
-  q6          Int
-  q7          Int
-  q8          Int
-  q9          Int
-  totalScore  Int
-  severity    String
-  createdAt   DateTime @default(now())
+  id             String   @id @default(cuid())
+  createdAt      DateTime @default(now())
+
+  userId         String?
+  assessmentType String   @default("PHQ9")
+  totalScore     Int
+  severity       String
+  rawAnswers     String
 }
 
 model Booking {
-  id        Int      @id @default(autoincrement())
-  slotTime  String
-  status    String
+  id          String       @id @default(cuid())
+  createdAt   DateTime     @default(now())
+
+  studentName  String
+  studentEmail String?
+  reason       String?
+
+  slot        DateTime
+  status      String @default("PENDING")
+
+  userId      String?
+}
+
+model MoodLog {
+  id        String   @id @default(cuid())
   createdAt DateTime @default(now())
+
+  userId    String?
+  mood      Int
+  note      String?
 }

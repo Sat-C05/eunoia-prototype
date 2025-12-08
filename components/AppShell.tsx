@@ -10,17 +10,12 @@ interface AppShellProps {
 
 export function AppShell({ children }: AppShellProps) {
     return (
-        <div
-            style={{
-                minHeight: '100vh',
-                background:
-                    'radial-gradient(circle at top, #1d4ed8 0, #020617 40%, #000 100%)',
-                color: '#e5e7eb',
-            }}
-        >
+        <div className="min-h-screen bg-neutral-950 bg-[radial-gradient(circle_at_top,_#1f2937_0,_#020617_50%)] text-neutral-100">
             <NotificationProvider>
                 <NavBar />
-                {children}
+                <main className="mx-auto max-w-5xl px-4 py-6 md:py-8 space-y-8">
+                    {children}
+                </main>
             </NotificationProvider>
         </div>
     );

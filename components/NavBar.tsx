@@ -6,78 +6,28 @@ import { usePathname } from 'next/navigation';
 const navLinks = [
     { href: '/', label: 'Home' },
     { href: '/assessment', label: 'Self-Assessment' },
+    { href: '/mood', label: 'Mood Tracker' },
     { href: '/booking', label: 'Book a Counselor' },
     { href: '/forum', label: 'Peer Support' },
+    { href: '/resources', label: 'Resources' },
+    { href: '/settings', label: 'Settings' },
+    { href: '/admin', label: 'Admin' },
 ];
 
 export function NavBar() {
     const pathname = usePathname();
 
     return (
-        <header
-            style={{
-                position: 'sticky',
-                top: 0,
-                zIndex: 50,
-                padding: '0.75rem 1.5rem',
-                display: 'flex',
-                justifyContent: 'center',
-            }}
-        >
-            <div
-                style={{
-                    width: '100%',
-                    maxWidth: '960px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    padding: '0.6rem 1rem',
-                    borderRadius: '999px',
-                    border: '1px solid rgba(148,163,184,0.5)',
-                    background:
-                        'linear-gradient(135deg, rgba(15,23,42,0.8), rgba(30,64,175,0.6))',
-                    boxShadow: '0 10px 40px rgba(15,23,42,0.9)',
-                    backdropFilter: 'blur(14px)',
-                }}
-            >
-                <div
-                    style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '0.5rem',
-                    }}
-                >
-                    <div
-                        style={{
-                            width: '26px',
-                            height: '26px',
-                            borderRadius: '999px',
-                            background:
-                                'radial-gradient(circle at 30% 30%, #38bdf8, #4f46e5, #0f172a)',
-                            boxShadow: '0 0 18px rgba(56,189,248,0.8)',
-                        }}
-                    />
-                    <span
-                        style={{
-                            fontWeight: 600,
-                            letterSpacing: '0.08em',
-                            textTransform: 'uppercase',
-                            fontSize: '0.8rem',
-                            color: '#e5e7eb',
-                        }}
-                    >
+        <header className="sticky top-0 z-40 border-b border-white/10 bg-neutral-950/70 backdrop-blur">
+            <div className="mx-auto flex h-16 max-w-5xl items-center justify-between px-4">
+                <div className="flex items-center gap-2">
+                    <div className="h-6 w-6 rounded-full bg-gradient-to-br from-sky-400 via-indigo-500 to-slate-900 shadow-[0_0_18px_rgba(56,189,248,0.8)]" />
+                    <span className="text-sm font-semibold uppercase tracking-widest text-neutral-100">
                         Eunoia
                     </span>
                 </div>
 
-                <nav
-                    style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '0.5rem',
-                        fontSize: '0.85rem',
-                    }}
-                >
+                <nav className="flex items-center gap-1">
                     {navLinks.map((link) => {
                         const isActive =
                             pathname === link.href ||
@@ -87,19 +37,12 @@ export function NavBar() {
                             <Link
                                 key={link.href}
                                 href={link.href}
-                                style={{
-                                    padding: '0.35rem 0.9rem',
-                                    borderRadius: '999px',
-                                    textDecoration: 'none',
-                                    color: isActive ? '#e5e7eb' : '#cbd5f5',
-                                    backgroundColor: isActive
-                                        ? 'rgba(15,23,42,0.9)'
-                                        : 'transparent',
-                                    border: isActive
-                                        ? '1px solid rgba(191,219,254,0.8)'
-                                        : '1px solid transparent',
-                                    transition: 'all 0.15s ease-out',
-                                }}
+                                className={[
+                                    "rounded-full px-3 py-1 text-xs transition-colors",
+                                    isActive
+                                        ? "border border-purple-500 bg-purple-900/40 text-neutral-50"
+                                        : "text-neutral-300 hover:bg-neutral-800"
+                                ].join(" ")}
                             >
                                 {link.label}
                             </Link>

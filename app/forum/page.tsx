@@ -1,78 +1,66 @@
+// app/forum/page.tsx
 'use client';
 
 import Link from 'next/link';
 
 export default function ForumComingSoonPage() {
     return (
-        <main
-            style={{
-                minHeight: '100vh',
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                padding: '2rem',
-                background:
-                    'radial-gradient(circle at top, #1d4ed8 0, #020617 40%, #000 100%)',
-                color: '#e5e7eb',
-            }}
-        >
-            <div
-                style={{
-                    maxWidth: '700px',
-                    width: '100%',
-                    backgroundColor: 'rgba(15,23,42,0.9)',
-                    borderRadius: '1.5rem',
-                    padding: '2rem',
-                    boxShadow: '0 0 40px rgba(15,23,42,0.9)',
-                    border: '1px solid rgba(148,163,184,0.4)',
-                }}
-            >
-                <h1 style={{ fontSize: '1.8rem', marginBottom: '0.5rem' }}>
-                    Peer Support Space (Coming Soon)
+        <div className="flex flex-col items-center justify-center py-20">
+            <div className="w-full max-w-2xl rounded-2xl border border-neutral-800 bg-neutral-900/60 p-10 shadow-2xl backdrop-blur-md text-center relative overflow-hidden">
+                {/* Decorative background element */}
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500" />
+                <div className="absolute -top-24 -right-24 w-48 h-48 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
+                <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-purple-500/10 rounded-full blur-3xl pointer-events-none" />
+
+                <h1 className="text-3xl font-bold mb-4 text-neutral-100 relative z-10">
+                    Peer Support Space
                 </h1>
-                <p style={{ fontSize: '0.95rem', marginBottom: '1rem', opacity: 0.9 }}>
+
+                <div className="inline-block px-3 py-1 rounded-full bg-blue-900/30 border border-blue-500/30 text-blue-300 text-xs font-semibold tracking-wider uppercase mb-6">
+                    Coming Soon
+                </div>
+
+                <p className="text-base text-neutral-300 mb-8 max-w-md mx-auto leading-relaxed relative z-10">
                     In the full version of Eunoia, students will be able to share their
                     thoughts anonymously in a moderated peer support space.
                 </p>
 
-                <ul
-                    style={{
-                        fontSize: '0.9rem',
-                        marginBottom: '1.5rem',
-                        paddingLeft: '1.2rem',
-                        color: '#cbd5f5',
-                    }}
-                >
-                    <li>Anonymous, campus-only discussions</li>
-                    <li>Basic keyword filters for safety</li>
-                    <li>Human moderators for escalation</li>
-                </ul>
+                <div className="bg-neutral-950/50 rounded-xl p-6 mb-8 text-left border border-neutral-800/50 relative z-10">
+                    <h3 className="text-sm font-semibold text-neutral-200 mb-3 uppercase tracking-wide">Planned Features</h3>
+                    <ul className="space-y-3">
+                        <li className="flex items-start gap-3 text-sm text-neutral-400">
+                            <svg className="w-5 h-5 text-green-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            </svg>
+                            <span>Anonymous, campus-only discussions</span>
+                        </li>
+                        <li className="flex items-start gap-3 text-sm text-neutral-400">
+                            <svg className="w-5 h-5 text-green-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            </svg>
+                            <span>Basic keyword filters for safety</span>
+                        </li>
+                        <li className="flex items-start gap-3 text-sm text-neutral-400">
+                            <svg className="w-5 h-5 text-green-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            </svg>
+                            <span>Human moderators for escalation</span>
+                        </li>
+                    </ul>
+                </div>
 
-                <p
-                    style={{
-                        fontSize: '0.8rem',
-                        color: '#9ca3af',
-                        marginBottom: '1.5rem',
-                    }}
-                >
+                <p className="text-xs text-neutral-500 mb-8 relative z-10">
                     This feature is intentionally not enabled in the prototype to keep the
                     focus on safety and core flows (assessment and booking).
                 </p>
 
                 <Link
                     href="/"
-                    style={{
-                        padding: '0.8rem 1.4rem',
-                        borderRadius: '999px',
-                        backgroundColor: '#3b82f6',
-                        color: '#f9fafb',
-                        textDecoration: 'none',
-                        fontSize: '0.9rem',
-                    }}
+                    className="relative z-10 inline-flex items-center justify-center rounded-lg bg-blue-600 px-8 py-3 text-sm font-medium text-white transition-all hover:bg-blue-500 hover:shadow-lg hover:shadow-blue-900/20"
                 >
                     Back to Home
                 </Link>
             </div>
-        </main>
+        </div>
     );
 }

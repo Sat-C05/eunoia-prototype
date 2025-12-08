@@ -3,6 +3,53 @@
 
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { type AssessmentType } from '@/lib/assessmentConfig';
+
+function getRecommendations(type: AssessmentType, severity: string): string[] {
+    const s = severity.toLowerCase();
+
+    if (type === "PHQ9") {
+        if (s.includes("minimal")) {
+            return [
+                "Your score suggests minimal depressive symptoms.",
+                "Keep using tools like the mood log and self-care habits to maintain your well-being.",
+            ];
+        }
+        if (s.includes("mild") || s.includes("moderate")) {
+            return [
+                "Your score suggests mild to moderate depressive symptoms.",
+                "Consider talking to a trusted friend or mentor about how you’ve been feeling.",
+                "If these feelings persist or worsen, consider booking a counseling session.",
+            ];
+        }
+        return [
+            "Your score suggests more significant depressive symptoms.",
+            "It may be helpful to speak with a mental health professional or campus counselor soon.",
+            "If you ever feel at risk of harming yourself, please contact emergency services or a local helpline immediately.",
+        ];
+    }
+
+    // GAD-7 cases
+    if (s.includes("minimal")) {
+        return [
+            "Your score suggests minimal anxiety symptoms.",
+            "Continue using healthy coping strategies like sleep, movement, and breaks.",
+        ];
+    }
+    if (s.includes("mild") || s.includes("moderate")) {
+        return [
+            "Your score suggests mild to moderate anxiety symptoms.",
+            "Notice when worries feel overwhelming and experiment with grounding or breathing exercises.",
+            "Talking with a counselor or mentor can also help you manage stress more effectively.",
+        ];
+    }
+
+    return [
+        "Your score suggests more significant anxiety symptoms.",
+        "It may be helpful to speak with a mental health professional or campus counselor soon.",
+        "If anxiety is interfering with your daily life or sleep, please seek support rather than handling it alone.",
+    ];
+}
 
 function getMessage(severity: string | null) {
     if (!severity) return null;
@@ -54,209 +101,119 @@ function ResultContent() {
 
     const score = scoreParam ? Number(scoreParam) : null;
     const severity = severityParam || null;
+    const type = searchParams.get('type');
     const message = getMessage(severity);
 
     const hasValidData = score !== null && !Number.isNaN(score) && !!severity;
+    const recs = hasValidData ? getRecommendations(type as AssessmentType || 'PHQ9', severity!) : [];
 
     return (
-        <div
-            style={{
-                maxWidth: '750px',
-                width: '100%',
-                backgroundColor: 'rgba(15,23,42,0.9)',
-                borderRadius: '1.5rem',
-                padding: '2rem',
-                boxShadow: '0 0 40px rgba(15,23,42,0.9)',
-                border: '1px solid rgba(148,163,184,0.4)',
-            }}
-        >
-            <h1 style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>
-                Your Assessment Result
-            </h1>
+        <div className="flex justify-center items-center py-10">
+            <div className="w-full max-w-2xl rounded-2xl border border-neutral-800 bg-neutral-900/60 p-8 shadow-xl backdrop-blur-md">
+                <h1 className="text-3xl font-bold mb-2 text-neutral-100">
+                    Your Assessment Result
+                </h1>
 
-            {!hasValidData ? (
-                <div>
-                    <p style={{ marginBottom: '1rem' }}>
-                        We could not find your assessment data. Please take the
-                        self-assessment again.
-                    </p>
-                    <Link
-                        href="/assessment"
-                        style={{
-                            padding: '0.7rem 1.4rem',
-                            borderRadius: '999px',
-                            backgroundColor: '#3b82f6',
-                            color: '#f9fafb',
-                            textDecoration: 'none',
-                            fontSize: '0.95rem',
-                        }}
-                    >
-                        Take Self-Assessment
-                    </Link>
-                </div>
-            ) : (
-                <>
-                    <div
-                        style={{
-                            display: 'flex',
-                            flexWrap: 'wrap',
-                            gap: '1.5rem',
-                            marginBottom: '1.5rem',
-                        }}
-                    >
-                        <div>
-                            <p
-                                style={{
-                                    fontSize: '0.85rem',
-                                    textTransform: 'uppercase',
-                                    letterSpacing: '0.12em',
-                                    color: '#9ca3af',
-                                    marginBottom: '0.25rem',
-                                }}
-                            >
-                                Total Score
-                            </p>
-                            <p style={{ fontSize: '2.4rem', fontWeight: 700 }}>{score}</p>
-                        </div>
-                        <div>
-                            <p
-                                style={{
-                                    fontSize: '0.85rem',
-                                    textTransform: 'uppercase',
-                                    letterSpacing: '0.12em',
-                                    color: '#9ca3af',
-                                    marginBottom: '0.25rem',
-                                }}
-                            >
-                                Severity
-                            </p>
-                            <p
-                                style={{
-                                    fontSize: '1.2rem',
-                                    fontWeight: 600,
-                                }}
-                            >
-                                {severity}
-                            </p>
-                        </div>
-                    </div>
-
-                    {message && (
-                        <div
-                            style={{
-                                marginBottom: '1.5rem',
-                                padding: '1rem 1.25rem',
-                                borderRadius: '1rem',
-                                backgroundColor: 'rgba(37,99,235,0.15)',
-                                border: '1px solid rgba(59,130,246,0.4)',
-                            }}
-                        >
-                            <p
-                                style={{
-                                    fontWeight: 600,
-                                    marginBottom: '0.3rem',
-                                }}
-                            >
-                                {message.heading}
-                            </p>
-                            <p
-                                style={{
-                                    fontSize: '0.95rem',
-                                    margin: 0,
-                                    color: '#dbeafe',
-                                }}
-                            >
-                                {message.body}
-                            </p>
-                        </div>
-                    )}
-
-                    <div
-                        style={{
-                            display: 'flex',
-                            flexWrap: 'wrap',
-                            gap: '1rem',
-                            marginBottom: '1rem',
-                        }}
-                    >
+                {!hasValidData ? (
+                    <div>
+                        <p className="mb-6 text-neutral-400 text-sm">
+                            We could not find your assessment data. Please take the
+                            self-assessment again.
+                        </p>
                         <Link
-                            href="/booking"
-                            style={{
-                                padding: '0.8rem 1.6rem',
-                                borderRadius: '999px',
-                                backgroundColor: '#22c55e',
-                                color: '#022c22',
-                                textDecoration: 'none',
-                                fontWeight: 600,
-                                fontSize: '0.95rem',
-                            }}
+                            href="/assessment"
+                            className="inline-flex items-center justify-center rounded-lg bg-purple-600 px-6 py-2.5 text-sm font-medium text-white transition-all hover:bg-purple-500 hover:shadow-lg"
                         >
-                            Book a Counselor (Demo)
-                        </Link>
-                        <button
-                            type="button"
-                            onClick={() => router.push('/assessment')}
-                            style={{
-                                padding: '0.8rem 1.6rem',
-                                borderRadius: '999px',
-                                backgroundColor: 'transparent',
-                                border: '1px solid rgba(148,163,184,0.9)',
-                                color: '#e5e7eb',
-                                fontWeight: 500,
-                                fontSize: '0.95rem',
-                                cursor: 'pointer',
-                            }}
-                        >
-                            Retake Assessment
-                        </button>
-                        <Link
-                            href="/"
-                            style={{
-                                padding: '0.8rem 1.4rem',
-                                borderRadius: '999px',
-                                textDecoration: 'none',
-                                fontSize: '0.9rem',
-                                color: '#9ca3af',
-                            }}
-                        >
-                            Back to Home
+                            Take Self-Assessment
                         </Link>
                     </div>
+                ) : (
+                    <>
+                        <div className="flex flex-wrap gap-8 mb-8 mt-4">
+                            <div>
+                                <p className="text-xs font-semibold uppercase tracking-wider text-neutral-500 mb-1">
+                                    Total Score
+                                </p>
+                                <p className="text-4xl font-bold text-neutral-100">{score}</p>
+                            </div>
+                            <div>
+                                <p className="text-xs font-semibold uppercase tracking-wider text-neutral-500 mb-1">
+                                    Severity
+                                </p>
+                                <p className="text-xl font-semibold text-purple-400">
+                                    {severity}
+                                </p>
+                            </div>
+                        </div>
 
-                    <p
-                        style={{
-                            fontSize: '0.8rem',
-                            color: '#9ca3af',
-                        }}
-                    >
-                        This is a prototype for educational purposes. It does not provide
-                        a medical diagnosis. If you ever feel unsafe or have thoughts of
-                        self-harm, please reach out to a trusted person, counselor, or
-                        emergency services immediately.
-                    </p>
-                </>
-            )}
+                        {message && (
+                            <div className="mb-8 rounded-xl border border-blue-500/20 bg-blue-500/10 p-5">
+                                <p className="font-semibold text-blue-200 mb-2">
+                                    {message.heading}
+                                </p>
+                                <p className="text-sm text-blue-100 leading-relaxed">
+                                    {message.body}
+                                </p>
+                            </div>
+                        )}
+
+                        {recs.length > 0 && (
+                            <div className="mb-8 rounded-xl border border-neutral-800 bg-neutral-950/50 p-5">
+                                <p className="text-sm font-medium text-neutral-300 mb-3 uppercase tracking-wide">
+                                    Recommended Next Steps
+                                </p>
+                                <ul className="space-y-2 list-disc pl-4">
+                                    {recs.map((line) => (
+                                        <li
+                                            key={line}
+                                            className="text-sm text-neutral-400"
+                                        >
+                                            {line}
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        )}
+
+                        <div className="flex flex-wrap gap-3 mb-6">
+                            <Link
+                                href="/booking"
+                                className="inline-flex items-center justify-center rounded-lg bg-emerald-600 px-6 py-2.5 text-sm font-medium text-white transition-all hover:bg-emerald-500 hover:shadow-lg hover:shadow-emerald-900/20"
+                            >
+                                Book a Counselor (Demo)
+                            </Link>
+                            <button
+                                type="button"
+                                onClick={() => router.push('/assessment')}
+                                className="inline-flex items-center justify-center rounded-lg border border-neutral-700 bg-transparent px-5 py-2.5 text-sm font-medium text-neutral-300 transition-colors hover:border-neutral-500 hover:bg-neutral-800 hover:text-white"
+                            >
+                                Retake Assessment
+                            </button>
+                            <Link
+                                href="/"
+                                className="inline-flex items-center justify-center rounded-lg px-5 py-2.5 text-sm font-medium text-neutral-400 transition-colors hover:text-neutral-200"
+                            >
+                                Back to Home
+                            </Link>
+                        </div>
+
+                        <p className="text-xs text-neutral-500 pt-4 border-t border-neutral-800/50">
+                            This is a prototype for educational purposes. It does not provide
+                            a medical diagnosis. If you ever feel unsafe or have thoughts of
+                            self-harm, please reach out to a trusted person, counselor, or
+                            emergency services immediately.
+                        </p>
+                    </>
+                )}
+            </div>
         </div>
     );
 }
 
 export default function ResultPage() {
     return (
-        <main
-            style={{
-                minHeight: '100vh',
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                padding: '2rem',
-                background:
-                    'radial-gradient(circle at top, #1d4ed8 0, #020617 40%, #000 100%)',
-                color: '#e5e7eb',
-            }}
-        >
-            <Suspense fallback={<div>Loading result...</div>}>
-                <ResultContent />
-            </Suspense>
-        </main>
+        <Suspense fallback={<div className="text-center py-20 text-neutral-500">Loading result...</div>}>
+            <ResultContent />
+        </Suspense>
     );
 }
