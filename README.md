@@ -1,151 +1,115 @@
-🌿 Eunoia — A Campus-First Digital Mental Health Companion
+# 🌿 Eunoia — A Campus-First Digital Mental Health Companion
 
-Live Deployment: Add your Vercel URL here
+**Live Deployment:** *Add your Vercel URL here*
 
-Eunoia is a modern mental-health support platform designed specifically for college students.
-It brings together validated self-assessments, mood tracking, counseling bookings, and a central resource hub — all wrapped in a calming, minimal, glass-morphism UI.
+Eunoia is a modern mental-health support platform designed specifically for college students. It brings together validated self-assessments, mood tracking, counseling bookings, and a central resource hub — all wrapped in a calming, minimal, glass-morphism UI.
 
 The goal is simple:
 
-Make emotional check-ins accessible, private, and stigma-free.
+### **Make emotional well-being accessible, private, and stigma-free.**
 
-This project was developed using an AI-assisted engineering workflow, where the system architecture, design strategy, and major implementation steps were guided through structured prompting and iterative refinement.
+This project was developed using an **AI-assisted engineering workflow**, where architectural decisions, refactoring steps, and UI design were guided through structured prompting and iteration.
 
-🚀 Features
-🧠 1. Validated Mental Health Assessments
+---
 
-PHQ-9 for depression severity
+# 🚀 Features
 
-GAD-7 for anxiety severity
+## 🧠 1. Validated Mental Health Assessments
 
-Color-coded results with recommendations
+* PHQ-9 for depression
+* GAD-7 for anxiety
+* Color-coded severity
+* Configurable scoring
+* Clean card-based interface
 
-Fully configurable through a centralized config file
+## 😊 2. Mood Logging
 
-Smooth UX with card-based question flow
+* Daily emotion check-ins
+* Emoji/label selector
+* Optional notes
+* Recent mood history panel
 
-😊 2. Mood Logging
+## 📅 3. Counseling Session Booking
 
-Quick daily mood check-ins
+* Students can book sessions with name, email, reason & timeslot
+* Shows in user history
+* Admin can Confirm / Cancel / Delete
 
-Emotion chip selector
+## 👤 4. Anonymous Identity System
 
-Optional notes
+No login required. Each user gets a **persistent anonymous ID** stored locally, enabling:
 
-Recent mood history panel
+* Personalized history
+* Saved assessments
+* Saved moods
 
-Designed to build emotional awareness over time
+No personal data collection.
 
-📅 3. Counseling Booking System
+## 📊 5. Admin Dashboard
 
-Students can book a counseling session
+Includes:
 
-Stores name, email, timeslot, reason
+* Severity distribution analytics
+* Latest assessments
+* Latest bookings
+* CRUD controls:
 
-Bookings visible in the history panel
+  * Delete assessments
+  * Delete moods
+  * Update booking status
+  * Remove test data
 
-Admin can:
+## 🧭 6. Resources & Peer Support
 
-Confirm
+* Crisis links
+* Campus support
+* Guides for PHQ-9 & GAD-7
+* Peer support placeholder section
 
-Cancel
+---
 
-Delete bookings
+# 🎨 UI & UX
 
-👤 4. Anonymous Student Identity
+Consistent design system using:
 
-No login, no signup needed.
-Each user gets a persistent anonymous ID locally — enabling:
+* Glassmorphism surfaces
+* Dark gradient backgrounds
+* Responsive grid layouts
+* Clean typography
+* Purple (PHQ-9) and Blue (GAD-7) accents
 
-Personal history
+All UI refactored using Antigravity with **logic fully preserved**.
 
-Saved assessments
+---
 
-Saved mood logs
+# 🛠️ Tech Stack
 
-without collecting personal information.
+### Frontend
 
-📊 5. Admin Dashboard
+* Next.js 14 (App Router)
+* React
+* TypeScript
+* Tailwind CSS
 
-A dedicated /admin view with:
+### Backend
 
-Severity distribution analytics
+* Next.js API Routes
+* Prisma ORM
+* SQLite (demo)
+* PostgreSQL-ready schema
 
-Latest assessments
+### Deployment
 
-Latest bookings
+* Vercel
 
-Mood trends (future)
+---
 
-Full CRUD controls:
+# 🏛️ Architecture Overview
 
-Delete assessments
-
-Delete mood logs
-
-Update booking status
-
-Remove invalid or test entries
-
-🧭 6. Resources & Peer Support
-
-Crisis support
-
-Campus resources
-
-Mini-guides for PHQ-9 & GAD-7
-
-Peer support placeholder (future chat system)
-
-All pages use consistent glass UI styling
-
-🎨 UI & UX
-
-The entire interface uses a unified design system:
-
-Glassmorphism surfaces
-
-Dark gradient background
-
-Clean typography
-
-Responsive layouts
-
-Color-coded accents for each tool (PHQ-9 = purple, GAD-7 = blue)
-
-Minimal animations and soft interactions
-
-All UI was refactored using a controlled Antigravity workflow with logic preserved.
-
-🛠️ Tech Stack
-Frontend
-
-Next.js 14 (App Router)
-
-React
-
-TypeScript
-
-Tailwind CSS
-
-Backend
-
-Next.js API Routes
-
-Prisma ORM
-
-SQLite (dev/demo mode)
-
-PostgreSQL-ready schema
-
-Deployment
-
-Vercel (unified serverless deployment)
-
-🏛️ Architecture Overview
+```
 ┌───────────────────────┐
 │        Frontend        │
-│  Next.js / React UI    │
+│  Next.js + React UI    │
 │  Assessments, Mood     │
 │  Bookings, Admin       │
 └───────────▲───────────┘
@@ -153,18 +117,23 @@ Vercel (unified serverless deployment)
             ▼
 ┌───────────────────────┐
 │     Next.js API        │
-│  assessment/booking    │
-│  mood/admin endpoints  │
+│ Assessment / Booking   │
+│ Mood / Admin Routes    │
 └───────────▲───────────┘
             │ Prisma ORM
             ▼
 ┌───────────────────────┐
 │       Database         │
-│    SQLite (demo)       │
-│  Postgres-ready (prod) │
+│     SQLite (demo)      │
+│ PostgreSQL (future)    │
 └───────────────────────┘
+```
 
-📂 Project Structure
+---
+
+# 📂 Project Structure
+
+```
 app/
   assessment/
   booking/
@@ -188,63 +157,77 @@ lib/
 
 prisma/
   schema.prisma
+```
 
-⚙️ Local Setup
-1. Clone the repo
+---
+
+# ⚙️ Local Setup
+
+### 1. Clone the Repo
+
+```
 git clone <your-repo-url>
 cd eunoia
+```
 
-2. Install dependencies
+### 2. Install Dependencies
+
+```
 npm install
+```
 
-3. Create .env
+### 3. Create `.env`
+
+```
 DATABASE_URL="file:./prisma/dev.db"
+```
 
-4. Run Prisma migration
+### 4. Run Migrations
+
+```
 npx prisma migrate dev --name init
+```
 
-5. Start the development server
+### 5. Start Dev Server
+
+```
 npm run dev
+```
 
+Runs at **[http://localhost:3000](http://localhost:3000)**.
 
-App runs at http://localhost:3000
-.
+---
 
-☁️ Deployment on Vercel
+# ☁️ Deployment (Vercel)
 
-Push your project to GitHub
+1. Push to GitHub
+2. Import repo into Vercel
+3. Add environment variable:
 
-Import it into Vercel
-
-Set environment variable:
-
+```
 DATABASE_URL="file:./prisma/dev.db"
+```
 
+4. Deploy
 
-Deploy
+For production, migrate to Supabase Postgres.
 
-SQLite works fine for demos. For real production stability, switch to Supabase Postgres.
+---
 
-🔮 Future Roadmap
+# 🔮 Future Roadmap
 
-Supabase migration
+* Supabase migration
+* Admin authentication
+* Mood trend analytics
+* Guided journaling
+* Breathing exercises
+* AI-based recommendations
+* Peer support chat
+* PWA mobile support
+* Multi-language UI
 
-Auth-protected admin portal
+---
 
-Mood trend analytics
+# 📜 License
 
-Guided journaling
-
-Breathing exercise module
-
-AI-driven emotional insights
-
-Peer support chat system
-
-PWA support
-
-Multi-language UI
-
-📜 License
-
-MIT (or any license you prefer)
+MIT (or specify another license)
