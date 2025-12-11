@@ -14,21 +14,36 @@ export const metadata: Metadata = {
 export default async function RootLayout({
   children,
 }: {
+  children: ReactNode;
+}) {
+  const session = await getSession();
+  let user = null;
+
+  if (session?.userId) {
+    try {
+      // Fetch user details if authenticated
+      const dbUser = await prisma.user.findUnique({
+        where: { id: session.userId },
+        select: { name: true, email: true }
+      });
+
+      if (dbUser) {
+        // Sanitize for props (handle potential nulls from DB)
         user = {
-    name: user.name || undefined,
-    email: user.email || undefined
-  };
+          name: dbUser.name ?? undefined,
+          email: dbUser.email ?? undefined
+        };
       }
     } catch (e) {
-  console.error("Failed to fetch user in layout:", e);
-}
+      console.error("Failed to fetch user in layout:", e);
+    }
   }
 
-return (
-  <html lang="en">
-    <body>
-      <AppShell user={user}>{children}</AppShell>
-    </body>
-  </html>
-);
+  return (
+    <html lang="en">
+      <body>
+        <AppShell user={user}>{children}</AppShell>
+      </body>
+    </html>
+  );
 }
