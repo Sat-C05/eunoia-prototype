@@ -4,7 +4,8 @@ import { prisma } from "@/lib/prisma";
 export async function GET() {
     try {
         // Fetch users descending by creation date
-        // @ts-expect-error
+        // Fetch users descending by creation date
+        // @ts-expect-error -- Prisma client not generated locally
         const users = await prisma.user.findMany({
             select: {
                 id: true,
