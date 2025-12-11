@@ -6,8 +6,8 @@ import { NotificationProvider } from './NotificationProvider';
 import { MoodDrawer } from './MoodDrawer';
 
 interface UserProfile {
-    name?: string | null;
-    email?: string | null;
+    name?: string;
+    email?: string;
 }
 
 interface AppShellProps {
