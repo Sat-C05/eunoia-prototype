@@ -75,7 +75,9 @@ export default function BookingPage() {
     const isSlotBooked = (date: Date, timeString: string) => {
         const slotDate = new Date(date);
         const [time, modifier] = timeString.split(' ');
-        let [hours, minutes] = time.split(':').map(Number);
+        const [rawHours, minutes] = time.split(':').map(Number);
+        let hours = rawHours;
+
         if (modifier === 'PM' && hours < 12) hours += 12;
         if (modifier === 'AM' && hours === 12) hours = 0;
         slotDate.setHours(hours, minutes, 0, 0);
@@ -94,7 +96,9 @@ export default function BookingPage() {
 
         const slotDate = new Date(selectedDate);
         const [time, modifier] = timeString.split(' ');
-        let [hours, minutes] = time.split(':').map(Number);
+        const [rawHours, minutes] = time.split(':').map(Number);
+        let hours = rawHours;
+
         if (modifier === 'PM' && hours < 12) hours += 12;
         if (modifier === 'AM' && hours === 12) hours = 0;
         slotDate.setHours(hours, minutes, 0, 0);
@@ -136,6 +140,7 @@ export default function BookingPage() {
         }
     };
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const handleCounselorSelect = (c: any) => {
         setSelectedCounselor(c);
         setSelectedDate(weekDates[0]);
@@ -226,8 +231,8 @@ export default function BookingPage() {
                                                 key={date.toISOString()}
                                                 onClick={() => setSelectedDate(date)}
                                                 className={`px-4 py-2 rounded-lg border text-sm font-medium transition-all ${isSelected
-                                                        ? 'border-blue-500/50 bg-blue-500/10 text-blue-200'
-                                                        : 'border-white/5 bg-white/5 text-neutral-400 hover:bg-white/10 hover:text-neutral-200'
+                                                    ? 'border-blue-500/50 bg-blue-500/10 text-blue-200'
+                                                    : 'border-white/5 bg-white/5 text-neutral-400 hover:bg-white/10 hover:text-neutral-200'
                                                     }`}
                                             >
                                                 {date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
@@ -251,8 +256,8 @@ export default function BookingPage() {
                                                 onClick={() => !booked && handleBook(slot)}
                                                 disabled={booked || status === 'loading'}
                                                 className={`py-2 px-3 rounded text-xs font-medium border transition-all ${booked
-                                                        ? 'border-transparent bg-neutral-900 text-neutral-600 cursor-not-allowed decoration-slice'
-                                                        : 'border-white/5 bg-white/5 text-neutral-300 hover:bg-neutral-800 hover:border-white/10 hover:text-white'
+                                                    ? 'border-transparent bg-neutral-900 text-neutral-600 cursor-not-allowed decoration-slice'
+                                                    : 'border-white/5 bg-white/5 text-neutral-300 hover:bg-neutral-800 hover:border-white/10 hover:text-white'
                                                     } ${loading ? 'animate-pulse bg-blue-500/20' : ''}`}
                                             >
                                                 {slot}

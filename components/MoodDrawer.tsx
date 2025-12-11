@@ -46,7 +46,8 @@ export function MoodDrawer({ isOpen, onClose }: MoodDrawerProps) {
     const currentMoodConfig = mood ? moodOptions.find(m => m.value === mood) : null;
     const bgGradient = currentMoodConfig ? currentMoodConfig.bg : "bg-neutral-900";
 
-    async function loadLogs() {
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    const loadLogs = async () => {
         try {
             setIsLoadingLogs(true);
             const res = await fetch(`/api/mood/recent?userId=${encodeURIComponent(userId)}`);
@@ -59,7 +60,7 @@ export function MoodDrawer({ isOpen, onClose }: MoodDrawerProps) {
         } finally {
             setIsLoadingLogs(false);
         }
-    }
+    };
 
     useEffect(() => {
         if (isOpen && userId) loadLogs();
@@ -89,7 +90,8 @@ export function MoodDrawer({ isOpen, onClose }: MoodDrawerProps) {
             setNote("");
             setSelectedFactors([]);
             loadLogs();
-        } catch (error) {
+            loadLogs();
+        } catch {
             notify("error", "Failed to save mood");
         } finally {
             setIsSubmitting(false);
@@ -190,8 +192,8 @@ export function MoodDrawer({ isOpen, onClose }: MoodDrawerProps) {
                                             type="button"
                                             onClick={() => setMood(opt.value)}
                                             className={`group relative flex flex-col items-center justify-center py-3 rounded-xl transition-all duration-200 ${isSelected
-                                                    ? `bg-white/10 shadow-[0_0_15px_rgba(255,255,255,0.1)] scale-105 z-10 ring-1 ring-white/20`
-                                                    : "hover:bg-white/5 hover:scale-105"
+                                                ? `bg-white/10 shadow-[0_0_15px_rgba(255,255,255,0.1)] scale-105 z-10 ring-1 ring-white/20`
+                                                : "hover:bg-white/5 hover:scale-105"
                                                 }`}
                                         >
                                             <span className={`text-2xl mb-1 transition-transform duration-200 ${isSelected ? 'scale-125' : 'grayscale opacity-70 group-hover:grayscale-0 group-hover:opacity-100'}`}>
@@ -208,9 +210,8 @@ export function MoodDrawer({ isOpen, onClose }: MoodDrawerProps) {
                             )}
                         </div>
 
-                        {/* Factors */}
                         <div className="space-y-3">
-                            <label className="text-xs font-semibold uppercase tracking-wider text-white/50 pl-1">What's affecting you?</label>
+                            <label className="text-xs font-semibold uppercase tracking-wider text-white/50 pl-1">What&apos;s affecting you?</label>
                             <div className="flex flex-wrap gap-2">
                                 {FACTORS.map(f => {
                                     const isActive = selectedFactors.includes(f);
@@ -222,8 +223,8 @@ export function MoodDrawer({ isOpen, onClose }: MoodDrawerProps) {
                                                 setSelectedFactors(prev => isActive ? prev.filter(x => x !== f) : [...prev, f]);
                                             }}
                                             className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 border ${isActive
-                                                    ? "bg-white text-black border-white shadow-md scale-105"
-                                                    : "bg-black/20 text-white/60 border-white/5 hover:border-white/20 hover:bg-white/5"
+                                                ? "bg-white text-black border-white shadow-md scale-105"
+                                                : "bg-black/20 text-white/60 border-white/5 hover:border-white/20 hover:bg-white/5"
                                                 }`}
                                         >
                                             {f}
@@ -249,8 +250,8 @@ export function MoodDrawer({ isOpen, onClose }: MoodDrawerProps) {
                             type="submit"
                             disabled={isSubmitting}
                             className={`w-full py-3 rounded-xl font-bold text-sm tracking-wide transition-all duration-300 shadow-lg ${currentMoodConfig
-                                    ? `bg-gradient-to-r ${currentMoodConfig.color} text-white hover:shadow-xl hover:scale-[1.02]`
-                                    : "bg-neutral-800 text-neutral-500 cursor-not-allowed"
+                                ? `bg-gradient-to-r ${currentMoodConfig.color} text-white hover:shadow-xl hover:scale-[1.02]`
+                                : "bg-neutral-800 text-neutral-500 cursor-not-allowed"
                                 }`}
                         >
                             {isSubmitting ? "Saving..." : "Log Check-in"}
@@ -307,7 +308,7 @@ export function MoodDrawer({ isOpen, onClose }: MoodDrawerProps) {
 
                                                 {text && (
                                                     <p className="text-xs text-white/70 leading-relaxed font-light border-t border-white/5 pt-2 mt-1">
-                                                        "{text}"
+                                                        &quot;{text}&quot;
                                                     </p>
                                                 )}
                                             </div>
