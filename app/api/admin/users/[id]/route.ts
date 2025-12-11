@@ -13,7 +13,7 @@ export async function DELETE(
             prisma.booking.deleteMany({ where: { userId } }),
             prisma.assessment.deleteMany({ where: { userId } }),
             prisma.moodLog.deleteMany({ where: { userId } }),
-            // @ts-ignore
+            // @ts-expect-error
             prisma.user.delete({ where: { id: userId } }),
         ]);
 
