@@ -19,9 +19,11 @@ export default function BookingPage() {
 
     useEffect(() => {
         setUserId(getOrCreateClientUserId());
+        // Temporary debug wrapper — remove after debugging
+        console.log("[DEBUG] Booking page mounted - client JS running");
     }, []);
 
-    const handleBook = async (slot: string) => {
+    const internalHandleBook = async (slot: string) => {
         setSelectedSlot(slot);
         setStatus('loading');
 
@@ -54,6 +56,18 @@ export default function BookingPage() {
         } finally {
             setStatus('idle');
         }
+    };
+
+    // Temporary debug wrapper — remove after debugging
+    const handleBook = async (slot: string) => {
+        console.log("[DEBUG] book slot clicked:", slot);
+        try {
+            const r = await fetch("/api/booking", { method: "OPTIONS" });
+            console.log("[DEBUG] sanity OPTIONS response:", r.status);
+        } catch (err) {
+            console.log("[DEBUG] sanity fetch error:", err && (err as Error).message);
+        }
+        return await internalHandleBook(slot);
     };
 
     return (

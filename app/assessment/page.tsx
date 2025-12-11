@@ -45,6 +45,8 @@ export default function AssessmentPage() {
 
   useEffect(() => {
     setUserId(getOrCreateClientUserId());
+    // Temporary debug wrapper — remove after debugging
+    console.log("[DEBUG] Assessment page mounted - client JS running");
   }, []);
 
   const questions =
@@ -66,7 +68,7 @@ export default function AssessmentPage() {
     });
   }
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function internalSubmit(e: React.FormEvent) {
     e.preventDefault();
 
     try {
@@ -110,6 +112,20 @@ export default function AssessmentPage() {
     } finally {
       setIsSubmitting(false);
     }
+  }
+
+  // Temporary debug wrapper — remove after debugging
+  async function handleSubmit(e: React.FormEvent) {
+    console.log("[DEBUG] submit clicked");
+    // quick manual sanity fetch to check server reachability
+    try {
+      const r = await fetch("/api/assessment", { method: "OPTIONS" });
+      console.log("[DEBUG] sanity OPTIONS response:", r.status);
+    } catch (err) {
+      console.log("[DEBUG] sanity fetch error:", err && (err as Error).message);
+    }
+    // call the real submit function (preserve original behavior)
+    return await internalSubmit(e);
   }
 
   return (

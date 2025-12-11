@@ -43,9 +43,21 @@ export async function POST(req: NextRequest) {
             slotTime: slotStr
         });
     } catch (error) {
-        logEvent("booking_error", { error: (error as Error).message });
+        // Temporary debug code and should be removed after diagnosis
+        const err = error as Error;
+        const msg = err.message || "Unknown error";
+        logEvent("booking_error", { error: msg });
+
+        const hint = msg.toLowerCase().includes("prisma") || msg.toLowerCase().includes("connection")
+            ? "DB connection/Prisma error"
+            : "Internal Server Error";
+
         return NextResponse.json(
-            { error: `Failed to create booking: ${(error as Error).message}` },
+            {
+                ok: false,
+                error: hint,
+                details: msg.substring(0, 200)
+            },
             { status: 500 }
         );
     }
