@@ -13,21 +13,7 @@ export const metadata: Metadata = {
 
 export default async function RootLayout({
   children,
-}: {
-  children: ReactNode;
-}) {
-  const session = await getSession();
-  let user = null;
-  if (session?.userId) {
-    // Cast db to any to avoid type errors if local client is outdated
-    user = await (db as any).user.findUnique({ where: { id: session.userId }, select: { name: true, email: true } });
-  }
-
-  return (
-    <html lang="en">
-      <body>
-        <AppShell user={user}>{children}</AppShell>
       </body>
-    </html>
+    </html >
   );
 }

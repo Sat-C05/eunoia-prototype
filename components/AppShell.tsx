@@ -5,9 +5,14 @@ import { NavBar } from './NavBar';
 import { NotificationProvider } from './NotificationProvider';
 import { MoodDrawer } from './MoodDrawer';
 
+interface UserProfile {
+    name?: string | null;
+    email?: string | null;
+}
+
 interface AppShellProps {
     children: ReactNode;
-    user?: any; // Avoiding complex type imports for now
+    user?: UserProfile | null;
 }
 
 export function AppShell({ children, user }: AppShellProps) {
