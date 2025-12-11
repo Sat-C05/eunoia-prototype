@@ -2,6 +2,49 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { logEvent } from "@/lib/logger";
 
+
+export async function GET(req: NextRequest) {
+    try {
+        const { searchParams } = new URL(req.url);
+        const startStr = searchParams.get("start");
+        const endStr = searchParams.get("end");
+
+        if (!startStr || !endStr) {
+            return NextResponse.json({ error: "Missing start/end params" }, { status: 400 });
+        }
+
+        const start = new Date(startStr);
+        const end = new Date(endStr);
+
+        const bookings = await prisma.booking.findMany({
+            where: {
+                slot: {
+                    gte: start,
+                    lte: end,
+                },
+            },
+            select: {
+                slot: true,
+                reason: true, // To filter by counselor if needed later
+            },
+        });
+
+        return NextResponse.json({
+            bookings: bookings.map(b => ({
+                slot: b.slot,
+                counselorId: b.reason?.includes("Dr. Sarah") ? "c1"
+                    : b.reason?.includes("James") ? "c2"
+                        : b.reason?.includes("Emily") ? "c3"
+                            : "unknown"
+            }))
+        });
+
+    } catch (error) {
+        logEvent("booking_fetch_error", { error: (error as Error).message });
+        return NextResponse.json({ error: "Failed to fetch slots" }, { status: 500 });
+    }
+}
+
 export async function POST(req: NextRequest) {
     try {
         const body = await req.json();

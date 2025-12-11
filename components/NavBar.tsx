@@ -1,33 +1,37 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 const navLinks = [
     { href: '/', label: 'Home' },
-    { href: '/assessment', label: 'Self-Assessment' },
-    { href: '/mood', label: 'Mood Tracker' },
-    { href: '/booking', label: 'Book a Counselor' },
-    { href: '/forum', label: 'Peer Support' },
+    { href: '/assessment', label: 'Check-in' },
+    { href: '/booking', label: 'Consult' },
     { href: '/resources', label: 'Resources' },
+    { href: '/forum', label: 'Peer Support' },
     { href: '/settings', label: 'Settings' },
-    { href: '/admin', label: 'Admin' },
 ];
 
 export function NavBar() {
     const pathname = usePathname();
 
     return (
-        <header className="sticky top-0 z-40 border-b border-white/10 bg-neutral-950/70 backdrop-blur">
-            <div className="mx-auto flex h-16 max-w-5xl items-center justify-between px-4">
-                <div className="flex items-center gap-2">
-                    <div className="h-6 w-6 rounded-full bg-gradient-to-br from-sky-400 via-indigo-500 to-slate-900 shadow-[0_0_18px_rgba(56,189,248,0.8)]" />
-                    <span className="text-sm font-semibold uppercase tracking-widest text-neutral-100">
+        <header className="sticky top-0 z-50 border-b border-white/5 bg-neutral-950/80 backdrop-blur-xl transition-all duration-300">
+            <div className="mx-auto flex h-18 max-w-5xl items-center justify-between px-4 py-4">
+
+                {/* Logo Area */}
+                <Link href="/" className="group flex items-center gap-3 relative">
+                    <div className="relative h-8 w-8">
+                        <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-sky-400 via-indigo-500 to-purple-500 blur-sm opacity-70 group-hover:opacity-100 group-hover:blur-md transition-all duration-500" />
+                        <div className="relative h-full w-full rounded-full bg-gradient-to-br from-sky-400 via-indigo-500 to-slate-900 shadow-inner" />
+                    </div>
+                    <span className="text-lg font-bold tracking-tight text-white group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-white/70 transition-all duration-300">
                         Eunoia
                     </span>
-                </div>
+                </Link>
 
-                <nav className="flex items-center gap-1">
+                {/* Desktop Navigation */}
+                <nav className="hidden md:flex items-center gap-1 p-1 rounded-full bg-white/[0.03] border border-white/[0.05]">
                     {navLinks.map((link) => {
                         const isActive =
                             pathname === link.href ||
@@ -37,18 +41,31 @@ export function NavBar() {
                             <Link
                                 key={link.href}
                                 href={link.href}
-                                className={[
-                                    "rounded-full px-3 py-1 text-xs transition-colors",
-                                    isActive
-                                        ? "border border-purple-500 bg-purple-900/40 text-neutral-50"
-                                        : "text-neutral-300 hover:bg-neutral-800"
-                                ].join(" ")}
+                                className={`relative px-4 py-1.5 rounded-full text-xs font-medium transition-all duration-300 ${isActive
+                                    ? "text-white bg-white/10 shadow-[0_0_15px_rgba(255,255,255,0.1)]"
+                                    : "text-neutral-400 hover:text-white hover:bg-white/5"
+                                    }`}
                             >
                                 {link.label}
+                                {isActive && (
+                                    <span className="absolute inset-0 rounded-full ring-1 ring-white/10" />
+                                )}
                             </Link>
                         );
                     })}
+                    {/* Temp Admin Button */}
+                    <Link href="/admin" className="px-3 py-1.5 text-neutral-500 hover:text-red-400 transition-colors" title="Admin Portal">
+                        🔒
+                    </Link>
                 </nav>
+
+                {/* Mobile Menu Trigger (Simple for now) */}
+                <div className="md:hidden">
+                    <div className="h-8 w-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
+                        <span className="text-white/50">☰</span>
+                    </div>
+                </div>
+
             </div>
         </header>
     );

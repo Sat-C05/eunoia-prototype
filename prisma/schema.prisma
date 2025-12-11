@@ -3,15 +3,31 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = "file:./dev.db"
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  
+  email     String   @unique
+  password  String   // Hashed
+  name      String
+
+  // Relationships
+  assessments Assessment[]
+  bookings    Booking[]
+  moodLogs    MoodLog[]
 }
 
 model Assessment {
   id             String   @id @default(cuid())
   createdAt      DateTime @default(now())
 
-  userId         String?
+  userId         String? // Keep optional for now to support legacy data if any
+  user           User?   @relation(fields: [userId], references: [id])
+  
   assessmentType String   @default("PHQ9")
   totalScore     Int
   severity       String
@@ -30,6 +46,7 @@ model Booking {
   status      String @default("PENDING")
 
   userId      String?
+  user        User?    @relation(fields: [userId], references: [id])
 }
 
 model MoodLog {
@@ -37,6 +54,8 @@ model MoodLog {
   createdAt DateTime @default(now())
 
   userId    String?
+  user      User?   @relation(fields: [userId], references: [id])
+  
   mood      Int
   note      String?
 }
