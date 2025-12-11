@@ -40,7 +40,8 @@ export async function POST(req: NextRequest) {
         // Save to DB (SQLite) - rawAnswers is a String in the schema
         await prisma.assessment.create({
             data: {
-                userId: body.userId ?? null,
+                // Only link to User table if it looks like a valid Auth ID (CUID), not a UUID client ID.
+                userId: body.userId && body.userId.length > 20 ? body.userId : null,
                 assessmentType,
                 totalScore,
                 severity,

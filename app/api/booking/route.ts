@@ -74,7 +74,8 @@ export async function POST(req: NextRequest) {
                 reason: body.reason ?? null,
                 slot: slotDate,
                 status: "PENDING",
-                userId: userId ?? null,
+                // Only link to User table if it looks like a valid Auth ID (CUID), not a UUID client ID.
+                userId: userId && userId.length > 20 ? userId : null,
             },
         });
 

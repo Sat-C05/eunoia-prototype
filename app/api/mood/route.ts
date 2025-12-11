@@ -19,7 +19,8 @@ export async function POST(req: NextRequest) {
             data: {
                 mood: numericMood,
                 note: note ?? null,
-                userId: userId ?? null,
+                // Only link to User table if it looks like a valid Auth ID (CUID), not a UUID client ID.
+                userId: userId && userId.length > 20 ? userId : null,
             },
         });
 
