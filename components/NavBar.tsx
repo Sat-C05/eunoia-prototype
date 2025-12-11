@@ -53,11 +53,17 @@ export function NavBar() {
                             </Link>
                         );
                     })}
+                </nav>
+
+                <div className="hidden md:flex items-center gap-3">
+                    <Link href="/login" className="px-4 py-1.5 rounded-full text-xs font-medium bg-white/10 text-white hover:bg-white/20 transition-all border border-white/5">
+                        Log In
+                    </Link>
                     {/* Temp Admin Button */}
                     <Link href="/admin" className="px-3 py-1.5 text-neutral-500 hover:text-red-400 transition-colors" title="Admin Portal">
                         🔒
                     </Link>
-                </nav>
+                </div>
 
                 {/* Mobile Menu Trigger (Simple for now) */}
                 <div className="md:hidden">

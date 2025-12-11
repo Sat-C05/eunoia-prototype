@@ -37,7 +37,7 @@ type MoodRow = {
     note: string | null;
 };
 
-type Tab = 'overview' | 'assessments' | 'bookings' | 'moods';
+type Tab = 'overview' | 'assessments' | 'bookings' | 'moods' | 'users';
 
 // --- Helpers ---
 
@@ -55,25 +55,30 @@ export default function AdminDashboardClient() {
     const [moods, setMoods] = useState<MoodRow[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
+    const [users, setUsers] = useState<any[]>([]);
+
     async function loadData() {
         try {
             setIsLoading(true);
-            const [severityRes, assessmentsRes, bookingsRes, moodsRes] = await Promise.all([
+            const [severityRes, assessmentsRes, bookingsRes, moodsRes, usersRes] = await Promise.all([
                 fetch("/api/admin/severity-summary", { cache: "no-store" }),
                 fetch("/api/admin/assessments/recent?limit=50", { cache: "no-store" }),
                 fetch("/api/admin/bookings/recent?limit=50", { cache: "no-store" }),
                 fetch("/api/admin/moods/recent?limit=50", { cache: "no-store" }),
+                fetch("/api/admin/users", { cache: "no-store" }),
             ]);
 
             const severity = severityRes.ok ? await severityRes.json() : null;
             const assessmentsJson = assessmentsRes.ok ? await assessmentsRes.json() : { assessments: [] };
             const bookingsJson = bookingsRes.ok ? await bookingsRes.json() : { bookings: [] };
             const moodsJson = moodsRes.ok ? await moodsRes.json() : { moods: [] };
+            const usersJson = usersRes.ok ? await usersRes.json() : { users: [] };
 
             setSeveritySummary(severity);
             setAssessments(assessmentsJson.assessments ?? []);
             setBookings(bookingsJson.bookings ?? []);
             setMoods(moodsJson.moods ?? []);
+            setUsers(usersJson.users ?? []);
         } finally {
             setIsLoading(false);
         }
@@ -87,6 +92,11 @@ export default function AdminDashboardClient() {
     const totalAssessments = severitySummary?.totalCount ?? 0;
 
     // --- Actions ---
+
+    async function handleLogout() {
+        await fetch("/api/auth/logout", { method: "POST" });
+        window.location.href = "/admin/login";
+    }
 
     async function handleDeleteAssessment(id: string) {
         if (!confirm("Delete this assessment?")) return;
@@ -127,12 +137,12 @@ export default function AdminDashboardClient() {
 
     // --- Render Components ---
 
-    const SidebarItem = ({ id, label, icon }: { id: Tab, label: string, icon: React.ReactNode }) => (
+    const SidebarItem = ({ id, label, icon }: { id: Tab | 'users', label: string, icon: React.ReactNode }) => (
         <button
-            onClick={() => setActiveTab(id)}
+            onClick={() => setActiveTab(id as Tab)}
             className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 text-sm font-medium ${activeTab === id
-                    ? "bg-white/10 text-white shadow-lg border border-white/5"
-                    : "text-neutral-400 hover:text-white hover:bg-white/5"
+                ? "bg-white/10 text-white shadow-lg border border-white/5"
+                : "text-neutral-400 hover:text-white hover:bg-white/5"
                 }`}
         >
             <span className={activeTab === id ? "text-purple-300" : "text-neutral-500"}>{icon}</span>
@@ -154,15 +164,20 @@ export default function AdminDashboardClient() {
                     <SidebarItem id="assessments" label="Assessments" icon={<svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>} />
                     <SidebarItem id="bookings" label="Bookings" icon={<svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>} />
                     <SidebarItem id="moods" label="Mood Logs" icon={<svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>} />
+                    <SidebarItem id="users" label="Users" icon={<svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>} />
                 </nav>
 
-                <div className="px-4 pt-4 border-t border-white/5">
+                <div className="px-4 pt-4 border-t border-white/5 space-y-2">
                     <button
                         onClick={loadData}
-                        className="flex items-center gap-2 text-xs text-neutral-500 hover:text-white transition-colors"
+                        className="flex items-center gap-2 text-xs text-neutral-500 hover:text-white transition-colors w-full"
                     >
                         <svg className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
                         Refresh Data
+                    </button>
+                    <button onClick={handleLogout} className="flex items-center gap-2 text-xs text-red-500 hover:text-red-400 transition-colors w-full">
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
+                        Sign Out
                     </button>
                 </div>
             </aside>
@@ -176,7 +191,11 @@ export default function AdminDashboardClient() {
                     <div className="space-y-8 animate-in fade-in duration-500">
                         <div>
                             <h2 className="text-2xl font-bold text-white mb-6">System Overview</h2>
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                                <div className="p-6 rounded-3xl bg-neutral-950/60 border border-white/5 space-y-2">
+                                    <span className="text-neutral-500 text-xs font-bold uppercase tracking-wider">Total Users</span>
+                                    <div className="text-4xl font-bold text-white">{users.length}</div>
+                                </div>
                                 <div className="p-6 rounded-3xl bg-neutral-950/60 border border-white/5 space-y-2">
                                     <span className="text-neutral-500 text-xs font-bold uppercase tracking-wider">Total Assessments</span>
                                     <div className="text-4xl font-bold text-white">{totalAssessments}</div>
@@ -324,6 +343,43 @@ export default function AdminDashboardClient() {
                                 </div>
                             ))}
                             {moods.length === 0 && <div className="col-span-2 text-center text-white/30 italic py-10">No mood logs found</div>}
+                        </div>
+                    </div>
+                )}
+
+                {activeTab === 'users' && (
+                    <div className="space-y-6 animate-in fade-in duration-500">
+                        <h2 className="text-2xl font-bold text-white">Registered Users</h2>
+                        <div className="rounded-2xl border border-white/5 bg-neutral-950/40 flex flex-col max-h-[70vh]">
+                            <div className="overflow-y-auto custom-scrollbar">
+                                <table className="w-full text-left text-sm relative">
+                                    <thead className="bg-neutral-900 text-white/40 uppercase text-xs font-bold sticky top-0 z-10 shadow-sm">
+                                        <tr>
+                                            <th className="px-6 py-4 bg-neutral-900">Name</th>
+                                            <th className="px-6 py-4 bg-neutral-900">Email</th>
+                                            <th className="px-6 py-4 bg-neutral-900">Joined</th>
+                                            <th className="px-6 py-4 bg-neutral-900 text-right">Data</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-white/5 text-white/80">
+                                        {users.map((u: any) => (
+                                            <tr key={u.id} className="hover:bg-white/5 transition-colors">
+                                                <td className="px-6 py-4 font-medium text-white">{u.name}</td>
+                                                <td className="px-6 py-4 text-white/60">{u.email}</td>
+                                                <td className="px-6 py-4 font-mono text-white/40">{formatDate(u.createdAt)}</td>
+                                                <td className="px-6 py-4 text-right">
+                                                    <span className="inline-flex gap-2 text-xs">
+                                                        <span title="Bookings" className="bg-white/5 px-2 py-1 rounded">📅 {u._count?.bookings || 0}</span>
+                                                        <span title="Assessments" className="bg-white/5 px-2 py-1 rounded">📝 {u._count?.assessments || 0}</span>
+                                                        <span title="Mood Logs" className="bg-white/5 px-2 py-1 rounded">😊 {u._count?.moodLogs || 0}</span>
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                        {users.length === 0 && <tr><td colSpan={4} className="px-6 py-8 text-center text-white/30 italic">No registered users found</td></tr>}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 )}
