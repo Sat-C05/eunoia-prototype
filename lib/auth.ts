@@ -1,30 +1,72 @@
-import { SignJWT, jwtVerify } from "jose";
+import { createHmac, timingSafeEqual } from "crypto";
 import { cookies } from "next/headers";
 
-// Use independent secret for student sessions
-const JWT_SECRET = new TextEncoder().encode(
-    process.env.JWT_SECRET || "student-secret-key-change-me"
-);
+const SECRET_KEY = process.env.JWT_SECRET || "student-secret-key-change-me";
+
+// --- Native Zero-Dependency JWT Implementation ---
+
+function base64UrlEncode(str: string): string {
+    return Buffer.from(str)
+        .toString("base64")
+        .replace(/=/g, "")
+        .replace(/\+/g, "-")
+        .replace(/\//g, "_");
+}
+
+function base64UrlDecode(str: string): string {
+    str = str.replace(/-/g, "+").replace(/_/g, "/");
+    while (str.length % 4) str += "=";
+    return Buffer.from(str, "base64").toString();
+}
+
+function signJwt(payload: object): string {
+    const header = base64UrlEncode(JSON.stringify({ alg: "HS256", typ: "JWT" }));
+    const body = base64UrlEncode(JSON.stringify({ ...payload, iat: Date.now(), exp: Date.now() + 24 * 60 * 60 * 1000 })); // 24h exp
+
+    const signature = createHmac("sha256", SECRET_KEY)
+        .update(`${header}.${body}`)
+        .digest("base64")
+        .replace(/=/g, "")
+        .replace(/\+/g, "-")
+        .replace(/\//g, "_");
+
+    return `${header}.${body}.${signature}`;
+}
+
+function verifyJwt(token: string): { userId: string } | null {
+    const [header, body, signature] = token.split(".");
+    if (!header || !body || !signature) return null;
+
+    const expectedSignature = createHmac("sha256", SECRET_KEY)
+        .update(`${header}.${body}`)
+        .digest("base64")
+        .replace(/=/g, "")
+        .replace(/\+/g, "-")
+        .replace(/\//g, "_");
+
+    const sigBuffer = Buffer.from(signature);
+    const expectedBuffer = Buffer.from(expectedSignature);
+
+    // Constant-time comparison to prevent timing attacks
+    if (sigBuffer.length !== expectedBuffer.length || !timingSafeEqual(sigBuffer, expectedBuffer)) {
+        return null;
+    }
+
+    try {
+        const payload = JSON.parse(base64UrlDecode(body));
+        if (Date.now() > payload.exp) return null; // Expired
+        return payload as { userId: string };
+    } catch {
+        return null;
+    }
+}
+
+// --- Auth Helpers ---
 
 export async function hashPassword(password: string): Promise<string> {
-    // using Web Crypto API to avoid 'bcrypt' dependency for now
-    // In production, recommend installing bcryptjs
-    // For this demo/MVP, we'll use a simple primitive encoding or verify with the user if they want to install 'bcryptjs'
-    // To strictly avoid external deps like bcrypt errors on edge, we can do a simple hash
-
-    // NOTE: This is a placeholder standard. For real security we MUST use bcrypt.
-    // I will write this assuming we can install bcryptjs later, but for "run now" compatibility I'll stick to a native implementation if possible 
-    // OR BETTER: explicit bcryptjs import and tell user to install. 
-    // Let's rely on the user running 'npm install bcryptjs' as instructed.
-
-    // However, to prevent "Module not found" errors immediately breaking the build before they look at chat, 
-    // I will use a native crypto SHA-256 hash for this simplified implementation.
-    // It is "good enough" for a demo but NOT production grade.
-
-    const msgBuffer = new TextEncoder().encode(password);
-    const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    // Determine which hash to use - simple SHA256 for demo robustness
+    const hash = createHmac('sha256', SECRET_KEY).update(password).digest('hex');
+    return hash;
 }
 
 export async function verifyPassword(plain: string, hashed: string): Promise<boolean> {
@@ -33,11 +75,7 @@ export async function verifyPassword(plain: string, hashed: string): Promise<boo
 }
 
 export async function createSession(userId: string) {
-    const token = await new SignJWT({ userId })
-        .setProtectedHeader({ alg: "HS256" })
-        .setIssuedAt()
-        .setExpirationTime("24h")
-        .sign(JWT_SECRET);
+    const token = signJwt({ userId });
 
     cookies().set("student_session", token, {
         httpOnly: true,
@@ -50,13 +88,7 @@ export async function createSession(userId: string) {
 export async function getSession() {
     const token = cookies().get("student_session")?.value;
     if (!token) return null;
-
-    try {
-        const { payload } = await jwtVerify(token, JWT_SECRET);
-        return payload as { userId: string };
-    } catch (err) {
-        return null;
-    }
+    return verifyJwt(token);
 }
 
 export async function clearSession() {
