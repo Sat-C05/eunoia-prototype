@@ -15,7 +15,7 @@ export async function GET(req: NextRequest) {
         });
 
         return NextResponse.json({ moods });
-    } catch (error) {
+    } catch {
         return NextResponse.json(
             { error: "Failed to fetch moods" },
             { status: 500 }

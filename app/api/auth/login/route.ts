@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
         } else {
             return NextResponse.json({ success: false, error: "Invalid Passcode" }, { status: 401 });
         }
-    } catch (error) {
+    } catch {
         return NextResponse.json({ error: "Server Error" }, { status: 500 });
     }
 }

@@ -46,7 +46,6 @@ export function MoodDrawer({ isOpen, onClose }: MoodDrawerProps) {
     const currentMoodConfig = mood ? moodOptions.find(m => m.value === mood) : null;
     const bgGradient = currentMoodConfig ? currentMoodConfig.bg : "bg-neutral-900";
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     const loadLogs = async () => {
         try {
             setIsLoadingLogs(true);
@@ -62,6 +61,7 @@ export function MoodDrawer({ isOpen, onClose }: MoodDrawerProps) {
         }
     };
 
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => {
         if (isOpen && userId) loadLogs();
     }, [isOpen, userId]);
