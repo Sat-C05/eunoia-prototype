@@ -13,29 +13,15 @@ export const metadata: Metadata = {
 
 export default async function RootLayout({
   children,
-}: {
-  children: ReactNode;
-}) {
-  const session = await getSession();
-  let user = null;
-  if (session?.userId) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    user = await (db as any).user.findUnique({ where: { id: session.userId }, select: { name: true, email: true } });
-
-    // Sanitizing nulls to undefined to satisfy strict TS types in components
-    if (user) {
-      user = {
-        name: user.name || undefined,
-        email: user.email || undefined
-      };
+};
     }
   }
 
   return (
-    <html lang="en">
-      <body>
-        <AppShell user={user}>{children}</AppShell>
-      </body>
-    </html>
-  );
+  <html lang="en">
+    <body>
+      <AppShell user={user}>{children}</AppShell>
+    </body>
+  </html>
+);
 }

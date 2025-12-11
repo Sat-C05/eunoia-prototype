@@ -13,7 +13,6 @@ export async function DELETE(
             prisma.booking.deleteMany({ where: { userId } }),
             prisma.assessment.deleteMany({ where: { userId } }),
             prisma.moodLog.deleteMany({ where: { userId } }),
-            // @ts-expect-error -- Prisma client not generated locally
             prisma.user.delete({ where: { id: userId } }),
         ]);
 
