@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 const SECRET_KEY = process.env.JWT_SECRET || "student-secret-key-change-me";
 
 // --- Native Zero-Dependency JWT Implementation ---
+// (Replaced 'jose' to fix Vercel build)
 
 function base64UrlEncode(str: string): string {
     return Buffer.from(str)
