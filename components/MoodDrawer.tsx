@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useNotifications } from "@/components/NotificationProvider";
 import { getOrCreateClientUserId } from "@/lib/clientUserId";
@@ -16,6 +16,33 @@ type MoodLog = {
 interface MoodDrawerProps {
     isOpen: boolean;
     onClose: () => void;
+}
+
+// Helpers outside component to avoid recreation
+function parseNote(rawNote: string | null) {
+    if (!rawNote) return { factors: [], text: null };
+    const factorMatch = rawNote.match(/^FACTORS:(.*?) \| (.*)/) || rawNote.match(/^FACTORS:(.*?) \|$/);
+    if (factorMatch) {
+        return {
+            factors: factorMatch[1].split(','),
+            text: factorMatch[2] || null
+        };
+    } else if (rawNote.startsWith("FACTORS:")) {
+        return {
+            factors: rawNote.replace("FACTORS:", "").split(",").map(s => s.trim()),
+            text: null
+        }
+    }
+    return { factors: [], text: rawNote };
+}
+
+function formatDateTime(input: string) {
+    const d = new Date(input);
+    if (Number.isNaN(d.getTime())) return { date: "—", time: "—" };
+    return {
+        date: d.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric' }),
+        time: d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })
+    };
 }
 
 export function MoodDrawer({ isOpen, onClose }: MoodDrawerProps) {
@@ -46,7 +73,7 @@ export function MoodDrawer({ isOpen, onClose }: MoodDrawerProps) {
     const currentMoodConfig = mood ? moodOptions.find(m => m.value === mood) : null;
     const bgGradient = currentMoodConfig ? currentMoodConfig.bg : "bg-neutral-900";
 
-    const loadLogs = async () => {
+    const loadLogs = useCallback(async () => {
         try {
             setIsLoadingLogs(true);
             const res = await fetch(`/api/mood/recent?userId=${encodeURIComponent(userId)}`);
@@ -54,17 +81,16 @@ export function MoodDrawer({ isOpen, onClose }: MoodDrawerProps) {
                 const data = await res.json();
                 setLogs(data.logs ?? []);
             }
-        } catch (error) {
-            console.error(error);
+        } catch {
+            // silent error
         } finally {
             setIsLoadingLogs(false);
         }
-    };
+    }, [userId]);
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => {
-        if (isOpen && userId) loadLogs();
-    }, [isOpen, userId]);
+        if (isOpen) loadLogs();
+    }, [isOpen, loadLogs]);
 
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
@@ -90,38 +116,11 @@ export function MoodDrawer({ isOpen, onClose }: MoodDrawerProps) {
             setNote("");
             setSelectedFactors([]);
             loadLogs();
-            loadLogs();
         } catch {
             notify("error", "Failed to save mood");
         } finally {
             setIsSubmitting(false);
         }
-    }
-
-    function parseNote(rawNote: string | null) {
-        if (!rawNote) return { factors: [], text: null };
-        const factorMatch = rawNote.match(/^FACTORS:(.*?) \| (.*)/) || rawNote.match(/^FACTORS:(.*?) \|$/);
-        if (factorMatch) {
-            return {
-                factors: factorMatch[1].split(','),
-                text: factorMatch[2] || null
-            };
-        } else if (rawNote.startsWith("FACTORS:")) {
-            return {
-                factors: rawNote.replace("FACTORS:", "").split(",").map(s => s.trim()),
-                text: null
-            }
-        }
-        return { factors: [], text: rawNote };
-    }
-
-    function formatDateTime(input: string) {
-        const d = new Date(input);
-        if (Number.isNaN(d.getTime())) return { date: "—", time: "—" };
-        return {
-            date: d.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric' }),
-            time: d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })
-        };
     }
 
     if (!isOpen) return null;

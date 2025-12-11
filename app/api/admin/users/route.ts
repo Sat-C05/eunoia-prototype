@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-export async function GET(req: NextRequest) {
+export async function GET() {
     try {
         // Fetch users descending by creation date
         const users = await prisma.user.findMany({
@@ -24,7 +24,7 @@ export async function GET(req: NextRequest) {
         });
 
         return NextResponse.json({ users });
-    } catch (error) {
+    } catch {
         return NextResponse.json({ error: "Failed to fetch users" }, { status: 500 });
     }
 }

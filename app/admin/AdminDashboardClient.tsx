@@ -37,6 +37,18 @@ type MoodRow = {
     note: string | null;
 };
 
+type UserRow = {
+    id: string;
+    createdAt: string;
+    email: string;
+    name: string;
+    _count: {
+        assessments: number;
+        bookings: number;
+        moodLogs: number;
+    };
+};
+
 type Tab = 'overview' | 'assessments' | 'bookings' | 'moods' | 'users';
 
 // --- Helpers ---
@@ -55,7 +67,7 @@ export default function AdminDashboardClient() {
     const [moods, setMoods] = useState<MoodRow[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
-    const [users, setUsers] = useState<any[]>([]);
+    const [users, setUsers] = useState<UserRow[]>([]);
 
     async function loadData() {
         try {
@@ -362,7 +374,7 @@ export default function AdminDashboardClient() {
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-white/5 text-white/80">
-                                        {users.map((u: any) => (
+                                        {users.map((u: UserRow) => (
                                             <tr key={u.id} className="hover:bg-white/5 transition-colors">
                                                 <td className="px-6 py-4 font-medium text-white">{u.name}</td>
                                                 <td className="px-6 py-4 text-white/60">{u.email}</td>
