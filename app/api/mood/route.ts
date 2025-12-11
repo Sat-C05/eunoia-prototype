@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { logEvent } from "@/lib/logger";
+import { getSession } from "@/lib/auth";
 
 export async function POST(req: NextRequest) {
     try {
+        const session = await getSession();
         const body = await req.json();
         const { mood, note, userId } = body;
 
@@ -19,8 +21,9 @@ export async function POST(req: NextRequest) {
             data: {
                 mood: numericMood,
                 note: note ?? null,
-                // Only link to User table if it looks like a valid Auth ID (CUID), not a UUID client ID.
-                userId: userId && userId.length > 20 ? userId : null,
+                // Logic: If we have a verified session, link to User. If not, store as anonymousId.
+                userId: session ? session.userId : null,
+                anonymousId: session ? null : userId,
             },
         });
 

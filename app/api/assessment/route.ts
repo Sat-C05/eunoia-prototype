@@ -5,9 +5,11 @@ import {
 } from "@/lib/assessmentConfig";
 import { logEvent } from "@/lib/logger";
 import { prisma } from "@/lib/prisma";
+import { getSession } from "@/lib/auth";
 
 export async function POST(req: NextRequest) {
     try {
+        const session = await getSession();
         const body = await req.json();
 
         // Support prompt's array style inputs
@@ -40,8 +42,9 @@ export async function POST(req: NextRequest) {
         // Save to DB (SQLite) - rawAnswers is a String in the schema
         await prisma.assessment.create({
             data: {
-                // Only link to User table if it looks like a valid Auth ID (CUID), not a UUID client ID.
-                userId: body.userId && body.userId.length > 20 ? body.userId : null,
+                // Logic: If we have a verified session, link to User. If not, store as anonymousId.
+                userId: session ? session.userId : null,
+                anonymousId: session ? null : body.userId,
                 assessmentType,
                 totalScore,
                 severity,

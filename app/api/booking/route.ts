@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getSession } from "@/lib/auth";
 import { logEvent } from "@/lib/logger";
 
 
@@ -47,6 +48,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
     try {
+        const session = await getSession();
         const body = await req.json();
 
         // Support both old 'slotTime' payload and new fuller payload
@@ -74,8 +76,9 @@ export async function POST(req: NextRequest) {
                 reason: body.reason ?? null,
                 slot: slotDate,
                 status: "PENDING",
-                // Only link to User table if it looks like a valid Auth ID (CUID), not a UUID client ID.
-                userId: userId && userId.length > 20 ? userId : null,
+                // Logic: If we have a verified session, link to User. If not, store as anonymousId.
+                userId: session ? session.userId : null,
+                anonymousId: session ? null : userId // Use the client-provided ID as anonymousId
             },
         });
 
