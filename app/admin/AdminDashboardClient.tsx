@@ -147,6 +147,13 @@ export default function AdminDashboardClient() {
         }
     }
 
+    async function handleDeleteUser(id: string) {
+        if (!confirm("Are you sure? This will delete the user and ALL their data (bookings, mood logs, etc).")) return;
+
+        await fetch(`/api/admin/users/${id}`, { method: "DELETE" });
+        setUsers((prev) => prev.filter((u) => u.id !== id));
+    }
+
     // --- Render Components ---
 
     const SidebarItem = ({ id, label, icon }: { id: Tab | 'users', label: string, icon: React.ReactNode }) => (
@@ -375,16 +382,22 @@ export default function AdminDashboardClient() {
                                     </thead>
                                     <tbody className="divide-y divide-white/5 text-white/80">
                                         {users.map((u: UserRow) => (
-                                            <tr key={u.id} className="hover:bg-white/5 transition-colors">
+                                            <tr key={u.id} className="hover:bg-white/5 transition-colors group">
                                                 <td className="px-6 py-4 font-medium text-white">{u.name}</td>
                                                 <td className="px-6 py-4 text-white/60">{u.email}</td>
                                                 <td className="px-6 py-4 font-mono text-white/40">{formatDate(u.createdAt)}</td>
-                                                <td className="px-6 py-4 text-right">
+                                                <td className="px-6 py-4 text-right flex items-center justify-end gap-3">
                                                     <span className="inline-flex gap-2 text-xs">
                                                         <span title="Bookings" className="bg-white/5 px-2 py-1 rounded">📅 {u._count?.bookings || 0}</span>
                                                         <span title="Assessments" className="bg-white/5 px-2 py-1 rounded">📝 {u._count?.assessments || 0}</span>
                                                         <span title="Mood Logs" className="bg-white/5 px-2 py-1 rounded">😊 {u._count?.moodLogs || 0}</span>
                                                     </span>
+                                                    <button
+                                                        onClick={() => handleDeleteUser(u.id)}
+                                                        className="text-red-400 opacity-0 group-hover:opacity-100 transition-opacity hover:text-red-300 text-xs font-bold"
+                                                    >
+                                                        Delete
+                                                    </button>
                                                 </td>
                                             </tr>
                                         ))}
