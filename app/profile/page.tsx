@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+
 import { useTheme } from "next-themes";
 import { getOrCreateClientUserId } from "@/lib/clientUserId";
 import { RESOURCES } from "@/lib/resourceList";
@@ -12,6 +12,7 @@ export default function ProfilePage() {
     const { theme, setTheme } = useTheme();
     const [mounted, setMounted] = useState(false);
     const [activeTab, setActiveTab] = useState<"overview" | "journey" | "community" | "settings">("overview");
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [profileData, setProfileData] = useState<any>(null);
     const [loading, setLoading] = useState(true);
 

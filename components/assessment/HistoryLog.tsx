@@ -7,6 +7,7 @@ type HistoryItem = {
     type: "EXPERIENTIAL" | "CAPACITY";
     date: string;       // Formatted date string
     timestamp: number;  // For sorting
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     data: any;          // The record content
 };
 

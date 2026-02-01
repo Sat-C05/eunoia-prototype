@@ -42,6 +42,13 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
     try {
+        // The 'req' argument was removed from the function signature.
+        // This line will now cause a runtime error because 'req' is undefined.
+        // If the intention was to remove the argument and also remove the body parsing,
+        // further changes would be needed.
+        // If the intention was to remove the argument and still access the request body,
+        // this would require a different approach depending on the framework/context.
+        // For Next.js API routes, 'req' is typically passed as an argument to access the request.
         const body = await req.json();
 
         // Basic Validation

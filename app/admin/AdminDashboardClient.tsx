@@ -5,11 +5,7 @@ import ModerationTab from "./ModerationTab";
 
 // --- Types ---
 
-type SeveritySummaryResponse = {
-    totalCount: number;
-    bySeverity: Record<string, number>;
-    days: number;
-};
+
 
 type AssessmentRow = {
     id: string;
@@ -79,7 +75,7 @@ export default function AdminDashboardClient() {
     async function loadData() {
         try {
             setIsLoading(true);
-            const [severityRes, assessmentsRes, bookingsRes, moodsRes, usersRes] = await Promise.all([
+            const [, assessmentsRes, bookingsRes, moodsRes, usersRes] = await Promise.all([
                 fetch("/api/admin/severity-summary", { cache: "no-store" }),
                 fetch("/api/admin/assessments/recent?limit=200", { cache: "no-store" }), // Increased limit for detailed view
                 fetch("/api/admin/bookings/recent?limit=100", { cache: "no-store" }),

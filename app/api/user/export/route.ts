@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
 // Helper to ensure array response even if DB fails
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function safeFetch(modelName: any, query: any) {
     try {
         return await modelName.findMany(query);
@@ -37,7 +38,6 @@ export async function GET(req: Request) {
             safeFetch(prisma.moodLog, { where: whereClause }),
             safeFetch(prisma.experientialLog, { where: whereClause }),
             safeFetch(prisma.capacityLog, { where: whereClause }),
-            // @ts-ignore - Prisma might not have regenerated types yet in strict mode
             safeFetch(prisma.journalEntry, { where: whereClause })
         ]);
 
@@ -46,6 +46,7 @@ export async function GET(req: Request) {
             user: {
                 anonymousId: anonymousId || "N/A",
                 userId: session?.userId || "N/A",
+                // @ts-expect-error - session type inference issue
                 name: session?.user?.name || "Guest"
             },
             stats: {

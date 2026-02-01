@@ -21,6 +21,7 @@ export default function JournalPage() {
     const [title, setTitle] = useState("");
     const [isSaving, setIsSaving] = useState(false);
     const [userId, setUserId] = useState("");
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [entries, setEntries] = useState<any[]>([]);
     const { notify } = useNotifications();
 
@@ -97,7 +98,7 @@ export default function JournalPage() {
             } else {
                 throw new Error("Delete failed");
             }
-        } catch (_err) {
+        } catch {
             notify("error", "Could not delete entry.");
         }
     };

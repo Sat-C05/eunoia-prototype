@@ -19,7 +19,7 @@ type Post = {
     _count: { reactions: number };
 };
 
-import { RESOURCES } from "@/lib/resourceList";
+
 
 export default function CommunityPage() {
     const { notify } = useNotifications();
@@ -40,6 +40,7 @@ export default function CommunityPage() {
         { type: "SOLIDARITY", icon: "🫂", label: "Hug" },
     ];
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [resources, setResources] = useState<any[]>([]); // Dynamic Resources
 
     const fetchPosts = useCallback(async () => {

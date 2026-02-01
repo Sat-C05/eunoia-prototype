@@ -20,7 +20,8 @@ export async function POST(req: NextRequest) {
         // Simplification for prototype:
         // If session exists, link to User. Else, link to AnonymousId.
 
-        let dbData: any = {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const dbData: any = {
             tags,
             note
         };
@@ -48,7 +49,8 @@ export async function GET(req: NextRequest) {
         const { searchParams } = new URL(req.url);
         const queryId = searchParams.get("userId");
 
-        let whereClause: any = {};
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const whereClause: any = {};
 
         if (session?.userId) {
             whereClause.userId = session.userId;

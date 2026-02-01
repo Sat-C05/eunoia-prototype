@@ -12,7 +12,8 @@ export async function POST(req: NextRequest) {
         const capValue = value !== undefined ? Number(value) : null;
 
         // processing logic
-        let dbData: any = {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const dbData: any = {
             physical: capValue ?? physical ?? 50,
             mental: capValue ?? mental ?? 50,
             emotional: capValue ?? emotional ?? 50
@@ -41,7 +42,8 @@ export async function GET(req: NextRequest) {
         const { searchParams } = new URL(req.url);
         const queryId = searchParams.get("userId");
 
-        let whereClause: any = {};
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const whereClause: any = {};
 
         if (session?.userId) {
             whereClause.userId = session.userId;

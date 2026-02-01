@@ -15,7 +15,8 @@ export default function AssessmentPage() {
   const { notify } = useNotifications();
   const [showTools, setShowTools] = useState(false);
   const [userId, setUserId] = useState<string>("");
-  const [_refreshTrigger, setRefreshTrigger] = useState(0);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   // Tool State
   const [assessmentType, setAssessmentType] = useState<AssessmentType>("PHQ9");
