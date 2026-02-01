@@ -64,14 +64,14 @@ function formatDate(input: string) {
 
 export default function AdminDashboardClient() {
     const [activeTab, setActiveTab] = useState<Tab>('overview');
-    const [severitySummary, setSeveritySummary] = useState<SeveritySummaryResponse | null>(null);
+    // const [severitySummary, setSeveritySummary] = useState<SeveritySummaryResponse | null>(null);
     const [assessments, setAssessments] = useState<AssessmentRow[]>([]);
     const [bookings, setBookings] = useState<BookingRow[]>([]);
     const [moods, setMoods] = useState<MoodRow[]>([]);
     const [users, setUsers] = useState<UserRow[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
-    if (isLoading) return <div className="text-white p-12 text-center animate-pulse">Loading Admin Console...</div>;
+    // if (isLoading) return <div className="text-white p-12 text-center animate-pulse">Loading Admin Console...</div>;
 
     const [assessmentFilter, setAssessmentFilter] = useState("ALL");
     const [searchQuery, setSearchQuery] = useState("");
@@ -93,7 +93,7 @@ export default function AdminDashboardClient() {
             const moodsJson = moodsRes.ok ? await moodsRes.json() : { moods: [] };
             const usersJson = usersRes.ok ? await usersRes.json() : { users: [] };
 
-            setSeveritySummary(severity);
+            // setSeveritySummary(severity);
             setAssessments(assessmentsJson.assessments ?? []);
             setBookings(bookingsJson.bookings ?? []);
             setMoods(moodsJson.moods ?? []);
@@ -206,6 +206,8 @@ export default function AdminDashboardClient() {
         ...
         */
     }
+
+    if (isLoading) return <div className="text-white p-12 text-center animate-pulse">Loading Admin Console...</div>;
 
     return (
         <div className="flex flex-col md:flex-row gap-8 min-h-[80vh]">

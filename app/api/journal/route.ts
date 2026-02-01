@@ -53,7 +53,7 @@ export async function GET(req: Request) {
         const { searchParams } = new URL(req.url);
         const queryAnonId = searchParams.get('anonymousId');
 
-        let whereClause: any = {};
+        const whereClause: any = {};
 
         if (session?.userId) {
             whereClause.userId = session.userId;
