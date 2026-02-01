@@ -56,7 +56,7 @@ export async function POST(req: NextRequest) {
                 link: body.link,
                 image: body.image || "/images/topics/default.png", // Fallback image
                 category: body.category || "General"
-            } as any
+            } as any // eslint-disable-line @typescript-eslint/no-explicit-any
         });
 
         return NextResponse.json({ success: true, resource: newResource });

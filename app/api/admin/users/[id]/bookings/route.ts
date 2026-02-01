@@ -13,7 +13,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
         });
 
         return NextResponse.json({ bookings });
-    } catch (_error) {
+    } catch {
         return NextResponse.json({ error: "Failed to fetch bookings" }, { status: 500 });
     }
 }

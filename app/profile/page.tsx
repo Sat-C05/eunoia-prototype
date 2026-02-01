@@ -200,7 +200,7 @@ export default function ProfilePage() {
                                                         🗑️
                                                     </button>
                                                 </div>
-                                                <p className="text-sm text-neutral-300 line-clamp-3">"{p.content}"</p>
+                                                <p className="text-sm text-neutral-300 line-clamp-3">&quot;{p.content}&quot;</p>
                                                 <div className="mt-2 flex justify-between items-center text-xs text-neutral-500">
                                                     <span>{p.category}</span>
                                                     <span>{new Date(p.createdAt).toLocaleDateString()}</span>
@@ -239,7 +239,7 @@ export default function ProfilePage() {
                                         <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-500">Reflections</h3>
                                         {data?.savedPosts?.map((p: any) => (
                                             <div key={p.id} className="p-4 rounded-xl bg-gradient-to-br from-indigo-900/20 to-neutral-900 border border-indigo-500/20">
-                                                <p className="text-sm text-neutral-200 line-clamp-2">"{p.content}"</p>
+                                                <p className="text-sm text-neutral-200 line-clamp-2">&quot;{p.content}&quot;</p>
                                                 <div className="mt-2 flex justify-between items-center text-xs text-neutral-500">
                                                     <span className="text-indigo-400">Saved</span>
                                                     <span>{new Date(p.createdAt).toLocaleDateString()}</span>
