@@ -1,8 +1,8 @@
 # 🌿 Eunoia — A Campus-First Digital Mental Health Companion
 
-**Live Deployment:** *(https://eunoia-prototype-7wycjuh04-satviks-projects-8dfddd80.vercel.app)*
+**Live Deployment:** [https://eunoia-prototype.vercel.app/](https://eunoia-prototype.vercel.app/)
 
-Eunoia is a modern mental-health support platform designed specifically for college students. It brings together validated self-assessments, mood tracking, counseling bookings, and a central resource hub — all wrapped in a calming, minimal, glass-morphism UI.
+Eunoia is a modern mental-health support platform designed specifically for college students. It brings together validated self-assessments, mood tracking, counseling bookings, reflective journaling, and a safe peer support community — all wrapped in a premium "Executive Jewel Tone" aesthetic that adapts to both Light and Dark modes.
 
 The goal is simple:
 
@@ -16,69 +16,56 @@ This project was developed using an **AI-assisted engineering workflow**, where 
 
 ## 🧠 1. Validated Mental Health Assessments
 
-* PHQ-9 for depression
-* GAD-7 for anxiety
-* Color-coded severity
-* Configurable scoring
-* Clean card-based interface
+*   **PHQ-9** for depression
+*   **GAD-7** for anxiety
+*   **UCLA Loneliness Scale**
+*   **Perceived Stress Scale (PSS)**
+*   **Penn State Worry Questionnaire (PSWQ)**
+*   Color-coded severity & instant feedback
+*   Clean, accessible card-based interface
 
-## 😊 2. Mood Logging
+## 😊 2. Mood & Vibe Tracking
 
-* Daily emotion check-ins
-* Emoji/label selector
-* Optional notes
-* Recent mood history panel
+*   Daily emotion check-ins with emoji selectors
+*   "Vibe Check" visualization on the dashboard
+*   Optional journal notes attached to mood logs
+*   Recent history panel for self-reflection
 
-## 📅 3. Counseling Session Booking
+## 📖 3. Reflective Journaling
 
-* Students can book sessions with name, email, reason & timeslot
-* Shows in user history
-* Admin can Confirm / Cancel / Delete
+*   Private space for thoughts and feelings
+*   "Executive" card-style layout for easy reading
+*   Date-stamped entries
 
-## 👤 4. Anonymous Identity System
+## 🤝 4. Community & Peer Support
 
-No login required. Each user gets a **persistent anonymous ID** stored locally, enabling:
+*   **Anonymous Forum**: Safe space to share reflections and struggles.
+*   **Soft Reactions**: "Warmth", "Insight", "Solidarity" (no toxic "likes").
+*   **Resources Hub**: Curated guides on academic pressure, social anxiety, and more, formatted for easy reading.
+*   **Moderation**: "Are you a Moderator?" access for community safety.
 
-* Personalized history
-* Saved assessments
-* Saved moods
+## 📅 5. Counseling Session Booking
 
-No personal data collection.
+*   Students can book sessions with name, email, reason & timeslot.
+*   "Anonymous" booking option supported.
+*   Admin can Confirm / Cancel / Delete requests.
 
-## 📊 5. Admin Dashboard
+## 📊 6. Executive Admin Dashboard
 
-Includes:
-
-* Severity distribution analytics
-* Latest assessments
-* Latest bookings
-* CRUD controls:
-
-  * Delete assessments
-  * Delete moods
-  * Update booking status
-  * Remove test data
-
-## 🧭 6. Resources & Peer Support
-
-* Crisis links
-* Campus support
-* Guides for PHQ-9 & GAD-7
-* Peer support placeholder section
+*   **System Overview**: Real-time metrics on user count, assessments, and "Campus Vibe".
+*   **Data Management**: Full CRUD controls for Users, Bookings, Moods, and Assessments.
+*   **Moderation Queue**: Review and manage flagged community posts.
+*   **Premium UI**: High-contrast "Toner" aesthetic with glassmorphism.
 
 ---
 
 # 🎨 UI & UX
 
-Consistent design system using:
-
-* Glassmorphism surfaces
-* Dark gradient backgrounds
-* Responsive grid layouts
-* Clean typography
-* Purple (PHQ-9) and Blue (GAD-7) accents
-
-All UI refactored using Antigravity with **logic fully preserved**.
+**Theme: Executive Jewel Tone**
+*   **Dual Mode**: Fully responsive Light and Dark modes.
+*   **Palette**: Deep Sapphire, Emerald, and Ambers against rich backgrounds (`bg-black` / `bg-white`).
+*   **Visuals**: Vignette overlays, glassmorphic cards, and crisp, high-contrast typography (`Outfit` font).
+*   **Interaction**: Subtle hover glows, smooth transitions, and tactile button states.
 
 ---
 
@@ -86,47 +73,37 @@ All UI refactored using Antigravity with **logic fully preserved**.
 
 ### Frontend
 
-* Next.js 14 (App Router)
-* React
-* TypeScript
-* Tailwind CSS
+*   **Next.js 14** (App Router)
+*   **React**
+*   **TypeScript**
+*   **Tailwind CSS** (with `@tailwindcss/typography`)
+*   **Framer Motion** (for smooth animations)
 
 ### Backend
 
-* Next.js API Routes
-* Prisma ORM
-* SQLite (demo)
-* PostgreSQL-ready schema
+*   **Next.js API Routes**
+*   **Prisma ORM**
+*   **SQLite** (Prototype Database)
 
 ### Deployment
 
-* Vercel
+*   **Vercel**
 
 ---
 
 # 🏛️ Architecture Overview
 
-```
-┌───────────────────────┐
-│        Frontend        │
-│  Next.js + React UI    │
-│  Assessments, Mood     │
-│  Bookings, Admin       │
-└───────────▲───────────┘
-            │ REST API
-            ▼
-┌───────────────────────┐
-│     Next.js API        │
-│ Assessment / Booking   │
-│ Mood / Admin Routes    │
-└───────────▲───────────┘
-            │ Prisma ORM
-            ▼
-┌───────────────────────┐
-│       Database         │
-│     SQLite (demo)      │
-│ PostgreSQL (future)    │
-└───────────────────────┘
+```mermaid
+graph TD
+    User[Student User] --> Client[Next.js Frontend]
+    Admin[Administrator] --> Client
+    
+    Client --> API{Next.js API Routes}
+    
+    API --> Auth[Auth Logic]
+    API --> Prisma[Prisma ORM]
+    
+    Prisma --> DB[(SQLite Database)]
 ```
 
 ---
@@ -135,28 +112,23 @@ All UI refactored using Antigravity with **logic fully preserved**.
 
 ```
 app/
-  assessment/
-  booking/
-  mood/
-  history/
-  admin/
-  resources/
-  forum/
-  layout.tsx
-  page.tsx
-
+  assessment/    # Screening tools (PHQ-9, GAD-7, etc.)
+  booking/       # Counseling requests
+  mood/          # Vibe check & logging
+  journal/       # Private reflections
+  community/     # Peer support forum
+  resources/     # Educational blog/guides
+  admin/         # Dashboard & Moderation
+  profile/       # User settings & history
+  
 components/
-  AppShell.tsx
-  NavBar.tsx
-  NotificationProvider.tsx
-
+  guide/         # "GuideWidget" (Chat assistant)
+  community/     # Forum modals & cards
+  NavBar.tsx     # Responsive navigation
+  
 lib/
-  prisma.ts
-  assessmentConfig.ts
-  logger.ts
-
-prisma/
-  schema.prisma
+  prisma.ts      # DB connection
+  resources.ts   # Markdown content loader
 ```
 
 ---
@@ -165,32 +137,32 @@ prisma/
 
 ### 1. Clone the Repo
 
-```
-git clone <your-repo-url>
+```bash
+git clone https://github.com/Sat-C05/eunoia-prototype.git
 cd eunoia
 ```
 
 ### 2. Install Dependencies
 
-```
+```bash
 npm install
 ```
 
 ### 3. Create `.env`
 
-```
+```env
 DATABASE_URL="file:./prisma/dev.db"
 ```
 
 ### 4. Run Migrations
 
-```
+```bash
 npx prisma migrate dev --name init
 ```
 
 ### 5. Start Dev Server
 
-```
+```bash
 npm run dev
 ```
 
@@ -200,34 +172,14 @@ Runs at **[http://localhost:3000](http://localhost:3000)**.
 
 # ☁️ Deployment (Vercel)
 
-1. Push to GitHub
-2. Import repo into Vercel
-3. Add environment variable:
-
-```
-DATABASE_URL="file:./prisma/dev.db"
-```
-
-4. Deploy
-
-For production, migrate to Supabase Postgres.
-
----
-
-# 🔮 Future Roadmap
-
-* Supabase migration
-* Admin authentication
-* Mood trend analytics
-* Guided journaling
-* Breathing exercises
-* AI-based recommendations
-* Peer support chat
-* PWA mobile support
-* Multi-language UI
+1.  Push your code to a GitHub repository.
+2.  Import the project into Vercel.
+3.  Add the Environment Variable:
+    *   `DATABASE_URL="file:./prisma/dev.db"`
+4.  Deploy! (Vercel typically handles the build command automatically).
 
 ---
 
 # 📜 License
 
-MIT (or specify another license)
+MIT License.
