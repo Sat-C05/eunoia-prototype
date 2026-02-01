@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { RESOURCES } from "@/lib/resourceList"; // Import seed data
 
-export async function GET(req: NextRequest) {
+export async function GET(_req: NextRequest) {
     try {
         // 1. Fetch from DB
         let resources = await prisma.resource.findMany({
@@ -56,7 +56,7 @@ export async function POST(req: NextRequest) {
                 link: body.link,
                 image: body.image || "/images/topics/default.png", // Fallback image
                 category: body.category || "General"
-            }
+            } as any
         });
 
         return NextResponse.json({ success: true, resource: newResource });

@@ -85,7 +85,7 @@ export default function HistoryLog({ userId, refreshTrigger }: { userId: string,
                                     <span key={t} className="px-2 py-1 rounded-md bg-white/10 text-xs text-neutral-300">{t}</span>
                                 ))}
                             </div>
-                            {item.data.note && <p className="text-sm text-neutral-400 italic">"{item.data.note}"</p>}
+                            {item.data.note && <p className="text-sm text-neutral-400 italic">&quot;{item.data.note}&quot;</p>}
                         </div>
                     ) : (
                         <div className="bg-white/5 border border-white/5 p-4 rounded-xl space-y-2">

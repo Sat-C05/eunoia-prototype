@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import UnifiedCheckIn from "@/components/assessment/UnifiedCheckIn";
 import { getOrCreateClientUserId } from "@/lib/clientUserId";
 

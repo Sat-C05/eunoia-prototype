@@ -15,7 +15,7 @@ export default function AssessmentPage() {
   const { notify } = useNotifications();
   const [showTools, setShowTools] = useState(false);
   const [userId, setUserId] = useState<string>("");
-  const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [_refreshTrigger, setRefreshTrigger] = useState(0);
 
   // Tool State
   const [assessmentType, setAssessmentType] = useState<AssessmentType>("PHQ9");

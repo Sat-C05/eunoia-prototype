@@ -78,7 +78,7 @@ export default function CreateReflectionModal({ isOpen, onClose, onPostCreated, 
                             <div className="space-y-4 text-sm text-neutral-300 leading-relaxed">
                                 <p>To keep this space safe for everyone, please agree to the following:</p>
                                 <ul className="space-y-3 list-disc pl-4 marker:text-purple-400">
-                                    <li><strong className="text-white">Share experiences, not advice.</strong> Say "I felt..." instead of "You should..."</li>
+                                    <li><strong className="text-white">Share experiences, not advice.</strong> Say &quot;I felt...&quot; instead of &quot;You should...&quot;</li>
                                     <li><strong className="text-white">No medical claims.</strong> Do not diagnose or prescribe fixes.</li>
                                     <li><strong className="text-white">No judgment.</strong> This is a place for observation, not debate.</li>
                                     <li><strong className="text-white">Personal reflection only.</strong> Focus on your own journey.</li>
@@ -99,7 +99,7 @@ export default function CreateReflectionModal({ isOpen, onClose, onPostCreated, 
                                     type="text"
                                     value={title}
                                     onChange={(e) => setTitle(e.target.value)}
-                                    placeholder="Give your reflection a name..."
+                                    placeholder="Here&apos;s my experience..., I&apos;m struggling with..., A win I had today..."
                                     className="w-full bg-white/5 border border-white/5 rounded-xl px-4 py-3 text-white text-sm placeholder:text-neutral-600 focus:outline-none focus:ring-1 focus:ring-purple-500"
                                     maxLength={100}
                                 />

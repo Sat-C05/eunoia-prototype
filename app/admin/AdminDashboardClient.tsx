@@ -108,7 +108,6 @@ export default function AdminDashboardClient() {
     }, []);
 
     // --- Computed Data ---
-    // const severities = severitySummary?.bySeverity ?? {};
 
     // Assessment Filtering
     const filteredAssessments = assessments.filter(a => {

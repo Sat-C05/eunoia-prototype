@@ -97,7 +97,7 @@ export default function JournalPage() {
             } else {
                 throw new Error("Delete failed");
             }
-        } catch (err) {
+        } catch (_err) {
             notify("error", "Could not delete entry.");
         }
     };
@@ -212,8 +212,8 @@ export default function JournalPage() {
                                 key={entry.id}
                                 onClick={() => loadEntry(entry)}
                                 className={`w-full p-5 rounded-2xl border transition-all cursor-pointer flex flex-col gap-2 group relative ${viewingId === entry.id
-                                        ? "bg-white/10 border-white/20 shadow-xl shadow-indigo-900/20"
-                                        : "bg-white/[0.02] border-white/5 hover:bg-white/[0.05] hover:border-white/10"
+                                    ? "bg-white/10 border-white/20 shadow-xl shadow-indigo-900/20"
+                                    : "bg-white/[0.02] border-white/5 hover:bg-white/[0.05] hover:border-white/10"
                                     }`}
                             >
                                 {/* Header */}

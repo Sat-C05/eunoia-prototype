@@ -203,7 +203,7 @@ export default function CommunityPage() {
                                         <div>
                                             {post.title && <h3 className="text-white font-bold mb-1 line-clamp-1">{post.title}</h3>}
                                             <p className="text-neutral-400 leading-relaxed font-light text-sm line-clamp-3">
-                                                "{post.content}"
+                                                &quot;{post.content}&quot;
                                             </p>
                                         </div>
                                     </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 
 type Message = {
@@ -24,11 +24,11 @@ export default function GuideWidget() {
 
     // --- Actions ---
 
-    function addMessage(msg: Message) {
+    const addMessage = useCallback((msg: Message) => {
         setMessages(prev => [...prev, msg]);
-    }
+    }, []);
 
-    function handleNavigator(path: string, label: string) {
+    const handleNavigator = useCallback((path: string, label: string) => {
         addMessage({ id: Date.now().toString(), text: label, sender: "user" });
         setTimeout(() => {
             addMessage({
@@ -41,30 +41,33 @@ export default function GuideWidget() {
                 setIsOpen(false);
             }, 800);
         }, 500);
-    }
+    }, [addMessage, router]);
 
-    function handleUserChoice(label: string, nextStep: () => void) {
+    const handleUserChoice = useCallback((label: string, nextStep: () => void) => {
         addMessage({ id: Date.now().toString(), text: label, sender: "user" });
         setTimeout(() => {
             nextStep();
         }, 600);
-    }
+    }, [addMessage]);
 
     // --- Flows ---
 
-    function showCrisis() {
+    // Cyclic Dependency Breaker
+    const resetChatRef = useRef<() => void>(() => { });
+
+    const showCrisis = useCallback(() => {
         addMessage({
             id: Date.now().toString(),
             sender: "bot",
             text: "I hear you. If you're in immediate danger or pain, please prioritize your safety right now.",
             type: "crisis_card",
             options: [
-                { label: "Start over", action: () => handleUserChoice("Start over", resetChat) }
+                { label: "Start over", action: () => handleUserChoice("Start over", resetChatRef.current) }
             ]
         });
-    }
+    }, [addMessage, handleUserChoice]);
 
-    function showSupportOptions() {
+    const showSupportOptions = useCallback(() => {
         addMessage({
             id: Date.now().toString(),
             sender: "bot",
@@ -75,9 +78,9 @@ export default function GuideWidget() {
                 { label: "Browse Guides", action: () => handleNavigator("/resources", "Open Library") },
             ]
         });
-    }
+    }, [addMessage, handleNavigator]);
 
-    function showExploreOptions() {
+    const showExploreOptions = useCallback(() => {
         addMessage({
             id: Date.now().toString(),
             sender: "bot",
@@ -88,7 +91,7 @@ export default function GuideWidget() {
                 { label: "Start Journaling", action: () => handleNavigator("/journal", "Open Journal") },
             ]
         });
-    }
+    }, [addMessage, handleNavigator]);
 
     // Main Reset
     const resetChat = useCallback(() => {
@@ -102,7 +105,11 @@ export default function GuideWidget() {
                 { label: "Curious / Exploring", action: () => handleUserChoice("Just exploring", showExploreOptions) },
             ]
         }]);
-    }, []);
+    }, [handleUserChoice, showCrisis, showSupportOptions, showExploreOptions]);
+
+    useEffect(() => {
+        resetChatRef.current = resetChat;
+    }, [resetChat]);
 
 
     return (
