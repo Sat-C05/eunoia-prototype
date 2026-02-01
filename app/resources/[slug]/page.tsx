@@ -15,50 +15,60 @@ export default async function ResourcePage({ params }: { params: { slug: string 
     }
 
     return (
-        <div className="min-h-screen bg-black text-white p-6 lg:p-12 relative overflow-hidden">
+        <div className="min-h-screen bg-background text-foreground p-6 lg:p-12 relative overflow-hidden font-heading">
+            {/* EXECUTIVE VIGNETTE */}
+            <div className="fixed inset-0 z-0 pointer-events-none bg-vignette-light dark:bg-vignette-dark" />
+
             {/* Background Ambience */}
-            <div className="absolute top-0 right-0 w-full h-full overflow-hidden z-0 pointer-events-none">
-                <div className="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-900/10 rounded-full blur-[120px] animate-pulse" />
+            <div className="fixed top-0 right-0 w-full h-full overflow-hidden z-0 pointer-events-none">
+                <div className="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-600/5 dark:bg-blue-900/10 rounded-full blur-[120px] animate-pulse" />
+                <div className="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] bg-purple-600/5 dark:bg-purple-900/10 rounded-full blur-[120px]" />
             </div>
 
             <div className="relative z-10 max-w-3xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
 
                 {/* Nav */}
                 <div className="mb-8">
-                    <Link href="/community" className="text-sm font-bold text-neutral-500 hover:text-white transition-colors">
+                    <Link href="/community" className="text-sm font-bold text-muted-foreground hover:text-primary transition-colors flex items-center gap-2">
                         ← Back to Community
                     </Link>
                 </div>
 
                 {/* Header */}
-                <header className="mb-10 pb-10 border-b border-white/10">
-                    <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-4 text-transparent bg-clip-text bg-gradient-to-r from-white via-white/90 to-white/70">
+                <header className="mb-10 pb-10 border-b border-border/50">
+                    <h1 className="text-4xl md:text-5xl font-black tracking-tight mb-6 text-foreground leading-tight">
                         {resource.frontmatter.title || "Resource"}
                     </h1>
-                    <div className="flex items-center gap-4 text-sm text-neutral-400">
-                        <span className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs font-bold uppercase tracking-wider">
+                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                        <span className="px-3 py-1 rounded-full bg-surface-hover border border-border text-xs font-bold uppercase tracking-wider text-foreground">
                             Guide
                         </span>
-                        <span>5 min read</span>
+                        <span className="font-medium">5 min read</span>
                     </div>
                 </header>
 
                 {/* Content */}
-                <article className="prose prose-invert prose-lg max-w-none prose-headings:font-light prose-p:text-neutral-300 prose-a:text-blue-400 prose-strong:text-white prose-blockquote:border-l-blue-500 prose-blockquote:bg-white/5 prose-blockquote:py-2 prose-blockquote:px-6 prose-blockquote:rounded-r-lg">
+                <article className="prose prose-neutral dark:prose-invert prose-lg max-w-none 
+                    prose-headings:font-bold prose-headings:tracking-tight prose-headings:text-foreground
+                    prose-p:text-muted-foreground prose-p:leading-relaxed prose-p:font-medium
+                    prose-a:text-primary prose-a:font-bold prose-a:no-underline hover:prose-a:underline
+                    prose-strong:text-foreground prose-strong:font-black
+                    prose-blockquote:border-l-primary/50 prose-blockquote:bg-surface-hover/30 prose-blockquote:py-2 prose-blockquote:px-6 prose-blockquote:rounded-r-lg prose-blockquote:text-foreground prose-blockquote:font-medium prose-blockquote:not-italic
+                    prose-li:text-muted-foreground prose-li:marker:text-primary/50">
                     <ReactMarkdown remarkPlugins={[remarkGfm]}>
                         {resource.content}
                     </ReactMarkdown>
                 </article>
 
                 {/* Footer */}
-                <div className="mt-16 pt-10 border-t border-white/10 flex flex-col md:flex-row gap-6 justify-between items-center text-center md:text-left bg-neutral-900/30 p-8 rounded-3xl">
+                <div className="mt-16 pt-10 border-t border-border/50 flex flex-col md:flex-row gap-6 justify-between items-center text-center md:text-left bg-surface-card border border-border p-8 rounded-[2rem] shadow-sm hover:shadow-md transition-all group">
                     <div>
-                        <h3 className="text-lg font-bold text-white mb-1">Need to talk?</h3>
-                        <p className="text-neutral-400 text-sm">Our counselors are here to listen.</p>
+                        <h3 className="text-lg font-black text-foreground mb-1">Need to talk?</h3>
+                        <p className="text-muted-foreground text-sm font-medium group-hover:text-foreground transition-colors">Our counselors are here to listen.</p>
                     </div>
                     <Link
                         href="/booking"
-                        className="px-6 py-3 bg-white text-black font-bold rounded-xl hover:scale-105 transition-transform shadow-xl"
+                        className="px-8 py-3 bg-foreground text-background font-bold rounded-xl hover:scale-105 transition-transform shadow-lg hover:shadow-xl uppercase tracking-wider text-xs"
                     >
                         Book a Session
                     </Link>
