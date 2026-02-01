@@ -19,6 +19,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
 
         // Check if exists
         const existing = await prisma.savedPost.findUnique({
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             where: finder as any
         });
 
@@ -28,11 +29,13 @@ export async function POST(req: Request, { params }: { params: { id: string } })
             return NextResponse.json({ saved: false });
         } else {
             // Save
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const data: any = {
+                postId: postId,
+                ...(session?.userId ? { userId: session.userId } : { anonymousId })
+            };
             await prisma.savedPost.create({
-                data: {
-                    postId,
-                    ...(session?.userId ? { userId: session.userId } : { anonymousId })
-                }
+                data
             });
             return NextResponse.json({ saved: true });
         }

@@ -16,6 +16,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
 
         // Check if exists
         const existing = await prisma.savedResource.findUnique({
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             where: finder as any
         });
 

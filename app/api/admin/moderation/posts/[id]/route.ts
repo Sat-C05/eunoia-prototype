@@ -22,7 +22,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 
         return NextResponse.json({ error: "Invalid action" }, { status: 400 });
 
-    } catch (error) {
+    } catch {
         return NextResponse.json({ error: "Operation failed" }, { status: 500 });
     }
 }

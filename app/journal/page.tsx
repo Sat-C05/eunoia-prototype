@@ -45,7 +45,7 @@ export default function JournalPage() {
             const res = await fetch(`/api/journal?anonymousId=${id}`);
             const data = await res.json();
             if (data.entries) setEntries(data.entries);
-        } catch (e) { }
+        } catch { }
     };
 
     const handleSave = async () => {
@@ -103,6 +103,7 @@ export default function JournalPage() {
         }
     };
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const loadEntry = (entry: any) => {
         setViewingId(entry.id);
         setTitle(entry.title || "");

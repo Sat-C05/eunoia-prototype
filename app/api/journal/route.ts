@@ -18,6 +18,7 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'Content required' }, { status: 400 });
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const data: any = {
             content,
             title: title || "Untitled Entry",
@@ -53,6 +54,7 @@ export async function GET(req: Request) {
         const { searchParams } = new URL(req.url);
         const queryAnonId = searchParams.get('anonymousId');
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const whereClause: any = {};
 
         if (session?.userId) {

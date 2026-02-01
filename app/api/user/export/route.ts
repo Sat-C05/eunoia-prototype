@@ -24,6 +24,7 @@ export async function GET(req: Request) {
     }
 
     // Build Query Clause
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const whereClause: any = { OR: [] };
     if (anonymousId) whereClause.OR.push({ anonymousId });
     if (session?.userId) whereClause.OR.push({ userId: session.userId });

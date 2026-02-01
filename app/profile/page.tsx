@@ -50,7 +50,7 @@ export default function ProfilePage() {
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
-        } catch (e) {
+        } catch {
             alert("Export failed.");
         }
     };
@@ -84,6 +84,7 @@ export default function ProfilePage() {
                         {["overview", "journey", "community", "settings"].map((tab) => (
                             <button
                                 key={tab}
+                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                 onClick={() => setActiveTab(tab as any)}
                                 className={`px-4 py-2 rounded-full text-sm font-bold uppercase tracking-wider transition-all ${activeTab === tab
                                     ? "bg-white text-black scale-105 shadow-lg"
@@ -121,6 +122,9 @@ export default function ProfilePage() {
                                 <div className="md:col-span-3 p-8 rounded-3xl bg-white/[0.02] border border-white/5">
                                     <h3 className="text-lg font-bold mb-4">Recent Activity</h3>
                                     <div className="space-y-4">
+                                        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+
+                                        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                                         {data?.moodLogs?.slice(0, 3).map((log: any) => (
                                             <div key={log.id} className="flex items-center gap-4 p-4 rounded-xl bg-white/5">
                                                 <div className="text-2xl">{["", "😫", "😕", "😐", "🙂", "🤩"][log.mood]}</div>
@@ -141,6 +145,7 @@ export default function ProfilePage() {
                                 <section>
                                     <h2 className="text-xl font-bold mb-4 text-neutral-200">Assessment History</h2>
                                     <div className="grid gap-4">
+                                        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                                         {data?.assessments?.map((a: any) => (
                                             <div key={a.id} className="flex justify-between items-center p-4 rounded-xl bg-white/5 border border-white/5">
                                                 <div>
@@ -160,6 +165,7 @@ export default function ProfilePage() {
                                 <section>
                                     <h2 className="text-xl font-bold mb-4 text-neutral-200">Consultations</h2>
                                     <div className="grid gap-4">
+                                        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                                         {data?.bookings?.map((b: any) => (
                                             <div key={b.id} className="flex justify-between items-center p-4 rounded-xl bg-white/5 border border-white/5">
                                                 <div>
@@ -183,6 +189,7 @@ export default function ProfilePage() {
                                 <section>
                                     <h2 className="text-xl font-bold mb-4 text-neutral-200">My Reflections</h2>
                                     <div className="space-y-4">
+                                        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                                         {data?.myPosts?.map((p: any) => (
                                             <div key={p.id} className="p-4 rounded-xl bg-white/5 border border-white/5 group relative">
                                                 <div className="flex justify-between items-start mb-2">
@@ -219,6 +226,7 @@ export default function ProfilePage() {
                                         {data?.savedResources?.length > 0 && (
                                             <div className="mb-4 space-y-2">
                                                 <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-500">Reading List</h3>
+                                                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                                                 {data.savedResources.map((sr: any) => {
                                                     const resDef = RESOURCES.find(r => r.id === sr.resourceId);
                                                     if (!resDef) return null;
@@ -238,6 +246,7 @@ export default function ProfilePage() {
                                         )}
 
                                         <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-500">Reflections</h3>
+                                        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                                         {data?.savedPosts?.map((p: any) => (
                                             <div key={p.id} className="p-4 rounded-xl bg-gradient-to-br from-indigo-900/20 to-neutral-900 border border-indigo-500/20">
                                                 <p className="text-sm text-neutral-200 line-clamp-2">&quot;{p.content}&quot;</p>

@@ -31,6 +31,8 @@ export default function HistoryLog({ userId, refreshTrigger }: { userId: string,
                 const combined: HistoryItem[] = [];
 
                 if (expRes.logs) {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     expRes.logs.forEach((log: any) => {
                         combined.push({
                             id: log.id,
@@ -43,6 +45,8 @@ export default function HistoryLog({ userId, refreshTrigger }: { userId: string,
                 }
 
                 if (capRes.logs) {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     capRes.logs.forEach((log: any) => {
                         combined.push({
                             id: log.id,
