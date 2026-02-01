@@ -12,14 +12,12 @@ type FlaggedPost = {
 
 export default function ModerationTab() {
     const [posts, setPosts] = useState<FlaggedPost[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
         loadFlaggedPosts();
     }, []);
 
     async function loadFlaggedPosts() {
-        setIsLoading(true);
         try {
             const res = await fetch("/api/admin/moderation/posts");
             if (res.ok) {
@@ -27,7 +25,7 @@ export default function ModerationTab() {
                 setPosts(data.posts || []);
             }
         } finally {
-            setIsLoading(false);
+            // done
         }
     }
 

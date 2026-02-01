@@ -20,6 +20,7 @@ type Resource = {
     description: string;
     category: string;
     link: string;
+    image: string | null;
 };
 
 export default function ModeratorPage() {
@@ -147,7 +148,7 @@ export default function ModeratorPage() {
                                                 <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-red-500/20 text-red-300">Flagged</span>
                                                 <span className="text-xs text-neutral-600 font-mono">{new Date(post.createdAt).toLocaleDateString()}</span>
                                             </div>
-                                            <p className="text-neutral-200 text-lg leading-relaxed font-light">"{post.content}"</p>
+                                            <p className="text-neutral-200 text-lg leading-relaxed font-light">&quot;{post.content}&quot;</p>
                                         </div>
                                         <div className="flex gap-3 min-w-fit">
                                             <button onClick={() => handleReviewAction(post.id, "delete")} className="px-4 py-2 rounded-lg bg-black border border-neutral-800 text-red-400 hover:bg-red-950/30 font-bold text-sm">Delete</button>

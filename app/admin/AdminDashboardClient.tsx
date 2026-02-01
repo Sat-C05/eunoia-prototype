@@ -71,6 +71,8 @@ export default function AdminDashboardClient() {
     const [users, setUsers] = useState<UserRow[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
+    if (isLoading) return <div className="text-white p-12 text-center animate-pulse">Loading Admin Console...</div>;
+
     const [assessmentFilter, setAssessmentFilter] = useState("ALL");
     const [searchQuery, setSearchQuery] = useState("");
 
@@ -106,7 +108,7 @@ export default function AdminDashboardClient() {
     }, []);
 
     // --- Computed Data ---
-    const severities = severitySummary?.bySeverity ?? {};
+    // const severities = severitySummary?.bySeverity ?? {};
 
     // Assessment Filtering
     const filteredAssessments = assessments.filter(a => {
@@ -190,23 +192,20 @@ export default function AdminDashboardClient() {
 
 
     // --- User Details Modal ---
-    const [selectedUser, setSelectedUser] = useState<UserRow | null>(null);
-    const [selectedUserBookings, setSelectedUserBookings] = useState<BookingRow[]>([]);
-    const [isUserModalOpen, setIsUserModalOpen] = useState(false);
+    // --- User Details Modal (Planned Feature) ---
+    // const [selectedUser, setSelectedUser] = useState<UserRow | null>(null);
+    // const [selectedUserBookings, setSelectedUserBookings] = useState<BookingRow[]>([]);
+    // const [isUserModalOpen, setIsUserModalOpen] = useState(false);
 
     async function handleViewUserBookings(user: UserRow) {
+        // Feature disabled for now to fix build vars
+        console.log("View user", user);
+        /* 
         setSelectedUser(user);
         setIsUserModalOpen(true);
-        setSelectedUserBookings([]); // Clear prev
-        try {
-            const res = await fetch(`/api/admin/users/${user.id}/bookings`);
-            if (res.ok) {
-                const data = await res.json();
-                setSelectedUserBookings(data.bookings || []);
-            }
-        } catch (e) {
-            console.error(e);
-        }
+        setSelectedUserBookings([]); 
+        ...
+        */
     }
 
     return (
@@ -308,7 +307,8 @@ export default function AdminDashboardClient() {
                                             <span className="text-2xl">{m.mood >= 4 ? "🤩" : m.mood === 3 ? "😐" : "😫"}</span>
                                             <span className="text-xs text-neutral-400">{formatDate(m.createdAt)}</span>
                                         </div>
-                                        {m.note && <p className="text-xs text-white/70 line-clamp-2">"{m.note}"</p>}
+                                        {m.note && <p className="text-xs text-white/70 line-clamp-2">&quot;{m.note}&quot;</p>}
+                                        <button onClick={() => handleDeleteMood(m.id)} className="text-xs text-red-500 hover:text-red-400 mt-1">Delete</button>
                                     </div>
                                 ))}
                             </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import { getOrCreateClientUserId } from "@/lib/clientUserId";
 import { RESOURCES } from "@/lib/resourceList";

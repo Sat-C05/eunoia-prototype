@@ -124,13 +124,19 @@ export default function CreateReflectionModal({ isOpen, onClose, onPostCreated, 
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-xs font-bold text-neutral-500 uppercase tracking-wider">Reflection</label>
+                                <h2 className="text-sm font-bold text-neutral-500 uppercase tracking-widest mb-4">New Entry</h2>
+                                <input
+                                    type="text"
+                                    placeholder="Title your thought (optional)"
+                                    className="w-full bg-transparent text-xl md:text-2xl font-light text-white placeholder-neutral-700 outline-none mb-4"
+                                    value={title}
+                                    onChange={(e) => setTitle(e.target.value)}
+                                />
                                 <textarea
+                                    placeholder="What&apos;s on your mind? Use &quot;I feel...&quot; or &quot;I noticed...&quot;"
+                                    className="w-full h-48 bg-transparent text-lg text-neutral-300 placeholder-neutral-700 resize-none outline-none leading-relaxed"
                                     value={content}
                                     onChange={(e) => setContent(e.target.value)}
-                                    placeholder="I've been feeling..."
-                                    className="w-full h-32 bg-white/5 border border-white/5 rounded-xl p-4 text-white text-sm placeholder:text-neutral-600 focus:outline-none focus:ring-1 focus:ring-purple-500 resize-none"
-                                    maxLength={2000}
                                 />
                                 <div className="text-right text-xs text-neutral-600">
                                     {content.length}/2000
