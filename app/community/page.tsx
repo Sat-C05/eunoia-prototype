@@ -262,7 +262,7 @@ export default function CommunityPage() {
                             </div>
                         ) : posts.length === 0 ? (
                             <div className="p-16 rounded-[2rem] border border-dashed border-border text-center text-muted-foreground bg-surface-card/50">
-                                <p className="font-medium text-lg mb-2">It's quiet here.</p>
+                                <p className="font-medium text-lg mb-2">It&apos;s quiet here.</p>
                                 <p className="text-sm">Be the first to share your reflection.</p>
                             </div>
                         ) : (
