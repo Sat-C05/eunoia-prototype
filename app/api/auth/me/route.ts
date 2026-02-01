@@ -15,7 +15,7 @@ export async function GET() {
         });
 
         return NextResponse.json({ user });
-    } catch (_error) {
+    } catch {
         return NextResponse.json({ user: null }, { status: 500 });
     }
 }

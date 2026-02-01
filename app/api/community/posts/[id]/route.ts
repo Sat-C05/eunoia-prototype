@@ -39,7 +39,7 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
         await prisma.post.delete({ where: { id: postId } });
         return NextResponse.json({ success: true });
 
-    } catch (_error) {
+    } catch {
         return NextResponse.json({ error: "Failed to delete post" }, { status: 500 });
     }
 }
@@ -74,7 +74,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 
         return NextResponse.json({ success: true });
 
-    } catch (_error) {
+    } catch {
         return NextResponse.json({ error: "Failed to update" }, { status: 500 });
     }
 }

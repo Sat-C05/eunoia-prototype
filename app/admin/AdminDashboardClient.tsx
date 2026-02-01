@@ -87,7 +87,7 @@ export default function AdminDashboardClient() {
                 fetch("/api/admin/users", { cache: "no-store" }),
             ]);
 
-            const severity = severityRes.ok ? await severityRes.json() : null;
+            // const severity = severityRes.ok ? await severityRes.json() : null;
             const assessmentsJson = assessmentsRes.ok ? await assessmentsRes.json() : { assessments: [] };
             const bookingsJson = bookingsRes.ok ? await bookingsRes.json() : { bookings: [] };
             const moodsJson = moodsRes.ok ? await moodsRes.json() : { moods: [] };

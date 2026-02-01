@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { RESOURCES } from "@/lib/resourceList"; // Import seed data
 
-export async function GET(_req: NextRequest) {
+export async function GET() {
     try {
         // 1. Fetch from DB
         let resources = await prisma.resource.findMany({
