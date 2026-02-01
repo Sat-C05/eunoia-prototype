@@ -144,7 +144,7 @@ export default function ProfilePage() {
                             <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
                                 <section>
                                     <h2 className="text-xl font-bold mb-4 text-neutral-200">Assessment History</h2>
-                                    <div className="grid gap-4">
+                                    <div className="grid gap-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
                                         {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                                         {data?.assessments?.map((a: any) => (
                                             <div key={a.id} className="flex justify-between items-center p-4 rounded-xl bg-white/5 border border-white/5">
@@ -164,7 +164,7 @@ export default function ProfilePage() {
 
                                 <section>
                                     <h2 className="text-xl font-bold mb-4 text-neutral-200">Consultations</h2>
-                                    <div className="grid gap-4">
+                                    <div className="grid gap-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
                                         {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                                         {data?.bookings?.map((b: any) => (
                                             <div key={b.id} className="flex justify-between items-center p-4 rounded-xl bg-white/5 border border-white/5">
