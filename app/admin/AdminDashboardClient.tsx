@@ -385,7 +385,7 @@ export default function AdminDashboardClient() {
                         {/* Registered Section */}
                         <section>
                             <h3 className="text-lg font-bold text-white mb-4 border-b border-white/5 pb-2">Registered Students <span className="text-xs font-normal text-neutral-500 ml-2">({registeredBookings.length})</span></h3>
-                            <div className="grid grid-cols-1 gap-4">
+                            <div className="grid grid-cols-1 gap-4 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
                                 {registeredBookings.map(b => (
                                     <div key={b.id} className="p-4 rounded-xl bg-white/5 border border-white/5 flex flex-col md:flex-row justify-between items-center gap-4">
                                         <div>
@@ -412,7 +412,7 @@ export default function AdminDashboardClient() {
                         {/* Anonymous Section */}
                         <section>
                             <h3 className="text-lg font-bold text-white mb-4 border-b border-white/5 pb-2">Anonymous Requests <span className="text-xs font-normal text-neutral-500 ml-2">({anonymousBookings.length})</span></h3>
-                            <div className="grid grid-cols-1 gap-4">
+                            <div className="grid grid-cols-1 gap-4 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
                                 {anonymousBookings.map(b => (
                                     <div key={b.id} className="p-4 rounded-xl bg-neutral-900/50 border border-white/5 flex flex-col md:flex-row justify-between items-center gap-4 opacity-80">
                                         <div>
