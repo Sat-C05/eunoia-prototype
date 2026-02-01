@@ -65,7 +65,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
             where: { id: postId },
             data: {
                 content: body.content,
-                // @ts-expect-error - title might not be in the generated type yet if prisma generate didn't run fully or type issue
+
                 title: body.title
             }
         });
