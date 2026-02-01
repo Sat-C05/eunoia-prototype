@@ -71,7 +71,7 @@ export async function GET(req: Request) {
         });
 
         return NextResponse.json({ entries });
-    } catch (error) {
+    } catch {
         return NextResponse.json({ error: 'Failed to fetch entries' }, { status: 500 });
     }
 }
@@ -106,7 +106,7 @@ export async function DELETE(req: Request) {
         await prisma.journalEntry.delete({ where: { id } });
 
         return NextResponse.json({ success: true });
-    } catch (error) {
+    } catch {
         return NextResponse.json({ error: 'Delete failed' }, { status: 500 });
     }
 }
