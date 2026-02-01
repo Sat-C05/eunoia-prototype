@@ -22,79 +22,13 @@ export default function GuideWidget() {
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const router = useRouter();
 
-    // Scroll to bottom on new message
-    useEffect(() => {
-        if (isOpen && messages.length === 0) {
-            resetChat();
-        }
-        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-    }, [messages, isOpen]);
+    // --- Actions ---
 
-    const addMessage = (msg: Message) => {
+    function addMessage(msg: Message) {
         setMessages(prev => [...prev, msg]);
-    };
+    }
 
-    const handleUserChoice = (label: string, nextStep: () => void) => {
-        addMessage({ id: Date.now().toString(), text: label, sender: "user" });
-        setTimeout(() => {
-            nextStep();
-        }, 600); // Small delay for "thinking" feel
-    };
-
-    const resetChat = () => {
-        setMessages([{
-            id: "init",
-            sender: "bot",
-            text: "Hi. I'm here to help you navigate Eunoia. How are you feeling right now?",
-            options: [
-                { label: "Overwhelmed / Crisis", action: () => handleUserChoice("Overwhelmed / Crisis", showCrisis) },
-                { label: "Anxious / Down", action: () => handleUserChoice("Anxious / Down", showSupportOptions) },
-                { label: "Curious / Exploring", action: () => handleUserChoice("Just exploring", showExploreOptions) },
-            ]
-        }]);
-    };
-
-    // --- Flows ---
-
-    const showCrisis = () => {
-        addMessage({
-            id: Date.now().toString(),
-            sender: "bot",
-            text: "I hear you. If you're in immediate danger or pain, please prioritize your safety right now.",
-            type: "crisis_card",
-            options: [
-                { label: "Start over", action: () => handleUserChoice("Start over", resetChat) }
-            ]
-        });
-    };
-
-    const showSupportOptions = () => {
-        addMessage({
-            id: Date.now().toString(),
-            sender: "bot",
-            text: "It's okay not to be okay. What do you think you need most right now?",
-            options: [
-                { label: "To vent / Connect", action: () => handleNavigator("/community", "Start Peer Support") },
-                { label: "Quiet reflection", action: () => handleNavigator("/assessment", "Go to Check-in") },
-                { label: "Browse Guides", action: () => handleNavigator("/resources", "Open Library") },
-            ]
-        });
-    };
-
-    const showExploreOptions = () => {
-        addMessage({
-            id: Date.now().toString(),
-            sender: "bot",
-            text: "Glad you're here. This is a space for self-discovery and support. Where would you like to start?",
-            options: [
-                { label: "Check my mood", action: () => handleNavigator("/assessment", "Try Mood Log") },
-                { label: "Browse community", action: () => handleNavigator("/community", "Visit Community") },
-                { label: "Start Journaling", action: () => handleNavigator("/journal", "Open Journal") },
-            ]
-        });
-    };
-
-    const handleNavigator = (path: string, label: string) => {
+    function handleNavigator(path: string, label: string) {
         addMessage({ id: Date.now().toString(), text: label, sender: "user" });
         setTimeout(() => {
             addMessage({
@@ -107,8 +41,68 @@ export default function GuideWidget() {
                 setIsOpen(false);
             }, 800);
         }, 500);
+    }
 
-    };
+    function handleUserChoice(label: string, nextStep: () => void) {
+        addMessage({ id: Date.now().toString(), text: label, sender: "user" });
+        setTimeout(() => {
+            nextStep();
+        }, 600);
+    }
+
+    // --- Flows ---
+
+    function showCrisis() {
+        addMessage({
+            id: Date.now().toString(),
+            sender: "bot",
+            text: "I hear you. If you're in immediate danger or pain, please prioritize your safety right now.",
+            type: "crisis_card",
+            options: [
+                { label: "Start over", action: () => handleUserChoice("Start over", resetChat) }
+            ]
+        });
+    }
+
+    function showSupportOptions() {
+        addMessage({
+            id: Date.now().toString(),
+            sender: "bot",
+            text: "It's okay not to be okay. What do you think you need most right now?",
+            options: [
+                { label: "To vent / Connect", action: () => handleNavigator("/community", "Start Peer Support") },
+                { label: "Quiet reflection", action: () => handleNavigator("/assessment", "Go to Check-in") },
+                { label: "Browse Guides", action: () => handleNavigator("/resources", "Open Library") },
+            ]
+        });
+    }
+
+    function showExploreOptions() {
+        addMessage({
+            id: Date.now().toString(),
+            sender: "bot",
+            text: "Glad you're here. This is a space for self-discovery and support. Where would you like to start?",
+            options: [
+                { label: "Check my mood", action: () => handleNavigator("/assessment", "Try Mood Log") },
+                { label: "Browse community", action: () => handleNavigator("/community", "Visit Community") },
+                { label: "Start Journaling", action: () => handleNavigator("/journal", "Open Journal") },
+            ]
+        });
+    }
+
+    // Main Reset
+    const resetChat = useCallback(() => {
+        setMessages([{
+            id: "init",
+            sender: "bot",
+            text: "Hi. I'm here to help you navigate Eunoia. How are you feeling right now?",
+            options: [
+                { label: "Overwhelmed / Crisis", action: () => handleUserChoice("Overwhelmed / Crisis", showCrisis) },
+                { label: "Anxious / Down", action: () => handleUserChoice("Anxious / Down", showSupportOptions) },
+                { label: "Curious / Exploring", action: () => handleUserChoice("Just exploring", showExploreOptions) },
+            ]
+        }]);
+    }, []);
 
 
     return (

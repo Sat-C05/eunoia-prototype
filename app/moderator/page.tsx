@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 
 // Types
@@ -31,11 +32,7 @@ export default function ModeratorPage() {
     const [isLoading, setIsLoading] = useState(true);
     const router = useRouter();
 
-    useEffect(() => {
-        fetchAllData();
-    }, []);
-
-    async function fetchAllData() {
+    const fetchAllData = useCallback(async () => {
         setIsLoading(true);
         try {
             // 1. Verify Auth & Fetch Flagged
@@ -62,7 +59,11 @@ export default function ModeratorPage() {
         } finally {
             setIsLoading(false);
         }
-    }
+    }, [router]);
+
+    useEffect(() => {
+        fetchAllData();
+    }, [fetchAllData]);
 
     async function handleReviewAction(id: string, action: "restore" | "delete") {
         if (!confirm(action === "delete" ? "Delete permanently?" : "Restore to feed?")) return;
@@ -211,7 +212,7 @@ export default function ModeratorPage() {
                                     {resources.map(res => (
                                         <div key={res.id} className="p-4 rounded-xl bg-white/5 border border-white/5 flex items-center gap-4 group">
                                             <div className="h-10 w-10 bg-neutral-800 rounded-lg flex items-center justify-center text-xl overflow-hidden relative">
-                                                {res.image ? <img src={res.image} alt="" className="w-full h-full object-cover" /> : "📚"}
+                                                {res.image ? <Image src={res.image} alt="" fill className="object-cover" /> : "📚"}
                                             </div>
                                             <div className="flex-grow min-w-0">
                                                 <h4 className="font-bold text-sm truncate text-white">{res.title}</h4>

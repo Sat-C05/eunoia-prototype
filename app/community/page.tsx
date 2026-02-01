@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import CreateReflectionModal from "@/components/community/CreateReflectionModal";
 import ModeratorLoginModal from "@/components/community/ModeratorLoginModal";
 import Image from "next/image";
@@ -42,22 +42,7 @@ export default function CommunityPage() {
 
     const [resources, setResources] = useState<any[]>([]); // Dynamic Resources
 
-    useEffect(() => {
-        setUserId(getOrCreateClientUserId());
-        const fetchData = async () => {
-            setIsLoading(true);
-            await fetchPosts();
-            await fetchResources();
-            setIsLoading(false);
-        };
-        fetchData();
-    }, []);
-
-    useEffect(() => {
-        fetchPosts();
-    }, [selectedCategory]);
-
-    async function fetchPosts() {
+    const fetchPosts = useCallback(async () => {
         try {
             const url = selectedCategory
                 ? `/api/community/posts?category=${encodeURIComponent(selectedCategory)}`
@@ -67,15 +52,30 @@ export default function CommunityPage() {
             const data = await res.json();
             if (data.posts) setPosts(data.posts);
         } catch { }
-    }
+    }, [selectedCategory]);
 
-    async function fetchResources() {
+    const fetchResources = useCallback(async () => {
         try {
             const res = await fetch("/api/resources");
             const data = await res.json();
             if (data.resources) setResources(data.resources);
         } catch { }
-    }
+    }, []);
+
+    useEffect(() => {
+        setUserId(getOrCreateClientUserId());
+        const fetchData = async () => {
+            setIsLoading(true);
+            await fetchPosts();
+            await fetchResources();
+            setIsLoading(false);
+        };
+        fetchData();
+    }, [fetchPosts, fetchResources]);
+
+    useEffect(() => {
+        fetchPosts();
+    }, [fetchPosts]);
 
     async function handleReact(postId: string, type: string) {
         // Optimistic Update
