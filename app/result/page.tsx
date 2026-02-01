@@ -4,6 +4,9 @@
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { type AssessmentType } from '@/lib/assessmentConfig';
+import { getOrCreateClientUserId } from "@/lib/clientUserId";
+import { useState, useEffect } from 'react';
+import HistoryLog from "@/components/assessment/HistoryLog";
 
 function getRecommendations(type: AssessmentType, severity: string): string[] {
     const s = severity.toLowerCase();
@@ -98,113 +101,115 @@ function ResultContent() {
 
     const scoreParam = searchParams.get('score');
     const severityParam = searchParams.get('severity');
+    const type = searchParams.get('type');
 
+    // Convert logic
     const score = scoreParam ? Number(scoreParam) : null;
     const severity = severityParam || null;
-    const type = searchParams.get('type');
-    const message = getMessage(severity);
-
     const hasValidData = score !== null && !Number.isNaN(score) && !!severity;
+    const message = getMessage(severity);
     const recs = hasValidData ? getRecommendations(type as AssessmentType || 'PHQ9', severity!) : [];
 
+    const [userId, setUserId] = useState<string>("");
+
+    useEffect(() => {
+        setUserId(getOrCreateClientUserId());
+    }, []);
+
     return (
-        <div className="flex justify-center items-center py-10">
-            <div className="w-full max-w-2xl rounded-2xl border border-neutral-800 bg-neutral-900/60 p-8 shadow-xl backdrop-blur-md">
-                <h1 className="text-3xl font-bold mb-2 text-neutral-100">
-                    Your Assessment Result
-                </h1>
+        <div className="min-h-screen bg-black text-white relative overflow-hidden py-10 px-6">
+            {/* Background Ambience */}
+            <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0 pointer-events-none">
+                <div className="absolute top-[20%] right-[0%] w-[50%] h-[50%] bg-indigo-900/20 rounded-full blur-[100px] animate-pulse" />
+            </div>
 
-                {!hasValidData ? (
+            <div className="relative z-10 max-w-6xl mx-auto grid lg:grid-cols-2 gap-12">
+
+                {/* LEFT COL: LATEST RESULT */}
+                <div className="space-y-8 animate-in slide-in-from-bottom-6">
                     <div>
-                        <p className="mb-6 text-neutral-400 text-sm">
-                            We could not find your assessment data. Please take the
-                            self-assessment again.
-                        </p>
-                        <Link
-                            href="/assessment"
-                            className="inline-flex items-center justify-center rounded-lg bg-purple-600 px-6 py-2.5 text-sm font-medium text-white transition-all hover:bg-purple-500 hover:shadow-lg"
-                        >
-                            Take Self-Assessment
-                        </Link>
+                        <Link href="/assessment" className="text-sm font-bold text-neutral-500 hover:text-white mb-4 block">← Back to Assessment</Link>
+                        <h1 className="text-4xl font-light mb-2 text-white">Your Insights</h1>
+                        <p className="text-neutral-400">Analysis of your latest screening.</p>
                     </div>
-                ) : (
-                    <>
-                        <div className="flex flex-wrap gap-8 mb-8 mt-4">
-                            <div>
-                                <p className="text-xs font-semibold uppercase tracking-wider text-neutral-500 mb-1">
-                                    Total Score
-                                </p>
-                                <p className="text-4xl font-bold text-neutral-100">{score}</p>
-                            </div>
-                            <div>
-                                <p className="text-xs font-semibold uppercase tracking-wider text-neutral-500 mb-1">
-                                    Severity
-                                </p>
-                                <p className="text-xl font-semibold text-purple-400">
-                                    {severity}
-                                </p>
-                            </div>
+
+                    {!hasValidData ? (
+                        <div className="bg-neutral-900/50 border border-white/5 p-8 rounded-3xl">
+                            <p className="mb-6 text-neutral-400 text-sm">
+                                No recent clinical data found. Start a check-in.
+                            </p>
+                            <Link
+                                href="/assessment"
+                                className="inline-flex items-center justify-center rounded-lg bg-white px-6 py-2.5 text-sm font-bold text-black transition-all hover:opacity-90"
+                            >
+                                Take Self-Assessment
+                            </Link>
                         </div>
-
-                        {message && (
-                            <div className="mb-8 rounded-xl border border-blue-500/20 bg-blue-500/10 p-5">
-                                <p className="font-semibold text-blue-200 mb-2">
-                                    {message.heading}
-                                </p>
-                                <p className="text-sm text-blue-100 leading-relaxed">
-                                    {message.body}
-                                </p>
+                    ) : (
+                        <div className="bg-white/5 backdrop-blur-xl border border-white/10 p-8 lg:p-10 rounded-[2.5rem] shadow-2xl">
+                            <div className="flex items-end justify-between mb-8 border-b border-white/5 pb-8">
+                                <div>
+                                    <p className="text-xs font-bold uppercase tracking-widest text-neutral-500 mb-2">Severity</p>
+                                    <p className="text-2xl font-medium text-purple-300">{severity}</p>
+                                </div>
+                                <div className="text-right">
+                                    <p className="text-xs font-bold uppercase tracking-widest text-neutral-500 mb-2">Score</p>
+                                    <p className="text-5xl font-light text-white">{score}</p>
+                                </div>
                             </div>
-                        )}
 
-                        {recs.length > 0 && (
-                            <div className="mb-8 rounded-xl border border-neutral-800 bg-neutral-950/50 p-5">
-                                <p className="text-sm font-medium text-neutral-300 mb-3 uppercase tracking-wide">
-                                    Recommended Next Steps
-                                </p>
-                                <ul className="space-y-2 list-disc pl-4">
+                            {message && (
+                                <div className="mb-8 p-6 rounded-2xl bg-indigo-500/10 border border-indigo-500/20">
+                                    <p className="font-semibold text-indigo-200 mb-2 text-lg">{message.heading}</p>
+                                    <p className="text-sm text-indigo-100/80 leading-relaxed max-w-lg">{message.body}</p>
+                                </div>
+                            )}
+
+                            <div className="space-y-4">
+                                <h4 className="text-sm font-bold uppercase tracking-widest text-neutral-500">Recommendations</h4>
+                                <ul className="space-y-3">
                                     {recs.map((line) => (
-                                        <li
-                                            key={line}
-                                            className="text-sm text-neutral-400"
-                                        >
+                                        <li key={line} className="flex gap-3 text-sm text-neutral-300">
+                                            <span className="text-purple-500">→</span>
                                             {line}
                                         </li>
                                     ))}
                                 </ul>
                             </div>
-                        )}
 
-                        <div className="flex flex-wrap gap-3 mb-6">
-                            <Link
-                                href="/booking"
-                                className="inline-flex items-center justify-center rounded-lg bg-emerald-600 px-6 py-2.5 text-sm font-medium text-white transition-all hover:bg-emerald-500 hover:shadow-lg hover:shadow-emerald-900/20"
-                            >
-                                Book a Counselor (Demo)
-                            </Link>
-                            <button
-                                type="button"
-                                onClick={() => router.push('/assessment')}
-                                className="inline-flex items-center justify-center rounded-lg border border-neutral-700 bg-transparent px-5 py-2.5 text-sm font-medium text-neutral-300 transition-colors hover:border-neutral-500 hover:bg-neutral-800 hover:text-white"
-                            >
-                                Retake Assessment
-                            </button>
-                            <Link
-                                href="/"
-                                className="inline-flex items-center justify-center rounded-lg px-5 py-2.5 text-sm font-medium text-neutral-400 transition-colors hover:text-neutral-200"
-                            >
-                                Back to Home
-                            </Link>
+                            <div className="mt-8 pt-8 border-t border-white/5 flex gap-4">
+                                <Link
+                                    href="/booking"
+                                    className="flex-1 py-3 bg-white text-black text-center font-bold rounded-xl hover:scale-[1.02] transition-transform"
+                                >
+                                    Book Counselor
+                                </Link>
+                                <button
+                                    onClick={() => router.push('/assessment')}
+                                    className="px-6 py-3 border border-white/10 rounded-xl hover:bg-white/5 transition-colors text-sm font-medium"
+                                >
+                                    Retake
+                                </button>
+                            </div>
                         </div>
+                    )}
+                </div>
 
-                        <p className="text-xs text-neutral-500 pt-4 border-t border-neutral-800/50">
-                            This is a prototype for educational purposes. It does not provide
-                            a medical diagnosis. If you ever feel unsafe or have thoughts of
-                            self-harm, please reach out to a trusted person, counselor, or
-                            emergency services immediately.
-                        </p>
-                    </>
-                )}
+                {/* RIGHT COL: HISTORY TIMELINE */}
+                <div className="space-y-8 animate-in slide-in-from-bottom-8 delay-100">
+                    <div>
+                        <h2 className="text-2xl font-light mb-2 text-white">Your Timeline</h2>
+                        <p className="text-neutral-400">A history of your Mirrors and Snapshots.</p>
+                    </div>
+
+                    <div className="bg-neutral-900/40 border border-white/5 rounded-[2.5rem] p-8 min-h-[500px] max-h-[800px] relative">
+                        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-neutral-900/80 rounded-[2.5rem] pointer-events-none z-10" />
+                        <div className="overflow-y-auto h-full pb-20 custom-scrollbar relative z-0">
+                            {userId ? <HistoryLog userId={userId} /> : <div className="text-neutral-500">Loading history...</div>}
+                        </div>
+                    </div>
+                </div>
+
             </div>
         </div>
     );

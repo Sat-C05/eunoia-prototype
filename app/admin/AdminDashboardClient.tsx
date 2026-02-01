@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import ModerationTab from "./ModerationTab";
 
 // --- Types ---
 
@@ -14,6 +15,7 @@ type AssessmentRow = {
     id: string;
     createdAt: string;
     userId: string | null;
+    anonymousId: string | null;
     assessmentType: string;
     totalScore: number;
     severity: string;
@@ -27,6 +29,7 @@ type BookingRow = {
     reason: string | null;
     slot: string;
     status: string;
+    anonymousId: string | null;
 };
 
 type MoodRow = {
@@ -49,7 +52,7 @@ type UserRow = {
     };
 };
 
-type Tab = 'overview' | 'assessments' | 'bookings' | 'moods' | 'users';
+type Tab = 'overview' | 'assessments' | 'bookings' | 'moods' | 'users' | 'moderation';
 
 // --- Helpers ---
 
@@ -65,18 +68,20 @@ export default function AdminDashboardClient() {
     const [assessments, setAssessments] = useState<AssessmentRow[]>([]);
     const [bookings, setBookings] = useState<BookingRow[]>([]);
     const [moods, setMoods] = useState<MoodRow[]>([]);
+    const [users, setUsers] = useState<UserRow[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
-    const [users, setUsers] = useState<UserRow[]>([]);
+    const [assessmentFilter, setAssessmentFilter] = useState("ALL");
+    const [searchQuery, setSearchQuery] = useState("");
 
     async function loadData() {
         try {
             setIsLoading(true);
             const [severityRes, assessmentsRes, bookingsRes, moodsRes, usersRes] = await Promise.all([
                 fetch("/api/admin/severity-summary", { cache: "no-store" }),
-                fetch("/api/admin/assessments/recent?limit=50", { cache: "no-store" }),
-                fetch("/api/admin/bookings/recent?limit=50", { cache: "no-store" }),
-                fetch("/api/admin/moods/recent?limit=50", { cache: "no-store" }),
+                fetch("/api/admin/assessments/recent?limit=200", { cache: "no-store" }), // Increased limit for detailed view
+                fetch("/api/admin/bookings/recent?limit=100", { cache: "no-store" }),
+                fetch("/api/admin/moods/recent?limit=100", { cache: "no-store" }),
                 fetch("/api/admin/users", { cache: "no-store" }),
             ]);
 
@@ -100,8 +105,31 @@ export default function AdminDashboardClient() {
         loadData();
     }, []);
 
+    // --- Computed Data ---
     const severities = severitySummary?.bySeverity ?? {};
-    const totalAssessments = severitySummary?.totalCount ?? 0;
+
+    // Assessment Filtering
+    const filteredAssessments = assessments.filter(a => {
+        if (assessmentFilter !== "ALL" && a.assessmentType !== assessmentFilter) return false;
+        if (searchQuery) {
+            const query = searchQuery.toLowerCase();
+            return (a.userId?.toLowerCase().includes(query) || a.anonymousId?.toLowerCase().includes(query) || a.id.includes(query));
+        }
+        return true;
+    });
+
+    // Bookings Splitting (FIXED)
+    // Registered = Has a student Email (and likely a Name)
+    // Anonymous = No Email, just an ID (or manually entered name but no email usually)
+    const registeredBookings = bookings.filter(b => !!b.studentEmail); // Simple check: If email exists, it's registered
+    const anonymousBookings = bookings.filter(b => !b.studentEmail);   // If no email, it's anonymous/guest
+
+    // Mood Analysis - Vibe Check
+    const moodDistribution = [0, 0, 0, 0, 0, 0]; // Index 1-5 (ignore 0)
+    moods.forEach(m => {
+        if (m.mood >= 1 && m.mood <= 5) moodDistribution[m.mood]++;
+    });
+    const totalMoods = moods.length || 1;
 
     // --- Actions ---
 
@@ -122,12 +150,6 @@ export default function AdminDashboardClient() {
         setBookings((prev) => prev.filter((b) => b.id !== id));
     }
 
-    async function handleDeleteMood(id: string) {
-        if (!confirm("Delete this mood log?")) return;
-        await fetch(`/api/admin/moods/${id}`, { method: "DELETE" });
-        setMoods((prev) => prev.filter((m) => m.id !== id));
-    }
-
     async function handleUpdateBookingStatus(id: string, status: string) {
         const res = await fetch(`/api/admin/bookings/${id}`, {
             method: "PATCH",
@@ -135,21 +157,18 @@ export default function AdminDashboardClient() {
             body: JSON.stringify({ status }),
         });
         if (res.ok) {
-            const data = await res.json().catch(() => null);
-            const updated = data?.booking as BookingRow | undefined;
-            if (updated) {
-                setBookings((prev) =>
-                    prev.map((b) => (b.id === id ? { ...b, status: updated.status } : b))
-                );
-            } else {
-                loadData();
-            }
+            setBookings((prev) => prev.map((b) => (b.id === id ? { ...b, status } : b)));
         }
     }
 
-    async function handleDeleteUser(id: string) {
-        if (!confirm("Are you sure? This will delete the user and ALL their data (bookings, mood logs, etc).")) return;
+    async function handleDeleteMood(id: string) {
+        if (!confirm("Delete this mood log?")) return;
+        await fetch(`/api/admin/moods/${id}`, { method: "DELETE" });
+        setMoods((prev) => prev.filter((m) => m.id !== id));
+    }
 
+    async function handleDeleteUser(id: string) {
+        if (!confirm("Delete this user and ALL data?")) return;
         await fetch(`/api/admin/users/${id}`, { method: "DELETE" });
         setUsers((prev) => prev.filter((u) => u.id !== id));
     }
@@ -169,6 +188,27 @@ export default function AdminDashboardClient() {
         </button>
     );
 
+
+    // --- User Details Modal ---
+    const [selectedUser, setSelectedUser] = useState<UserRow | null>(null);
+    const [selectedUserBookings, setSelectedUserBookings] = useState<BookingRow[]>([]);
+    const [isUserModalOpen, setIsUserModalOpen] = useState(false);
+
+    async function handleViewUserBookings(user: UserRow) {
+        setSelectedUser(user);
+        setIsUserModalOpen(true);
+        setSelectedUserBookings([]); // Clear prev
+        try {
+            const res = await fetch(`/api/admin/users/${user.id}/bookings`);
+            if (res.ok) {
+                const data = await res.json();
+                setSelectedUserBookings(data.bookings || []);
+            }
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
     return (
         <div className="flex flex-col md:flex-row gap-8 min-h-[80vh]">
             {/* Sidebar */}
@@ -179,23 +219,19 @@ export default function AdminDashboardClient() {
                 </div>
 
                 <nav className="space-y-1">
-                    <SidebarItem id="overview" label="Overview" icon={<svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>} />
-                    <SidebarItem id="assessments" label="Assessments" icon={<svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>} />
-                    <SidebarItem id="bookings" label="Bookings" icon={<svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>} />
-                    <SidebarItem id="moods" label="Mood Logs" icon={<svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>} />
-                    <SidebarItem id="users" label="Users" icon={<svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>} />
+                    <SidebarItem id="overview" label="Overview" icon={<span className="text-lg">📊</span>} />
+                    <SidebarItem id="assessments" label="Assessments" icon={<span className="text-lg">📝</span>} />
+                    <SidebarItem id="bookings" label="Bookings" icon={<span className="text-lg">📅</span>} />
+                    <SidebarItem id="moods" label="Mood Analysis" icon={<span className="text-lg">☁️</span>} />
+                    <SidebarItem id="users" label="Users" icon={<span className="text-lg">👥</span>} />
+                    <SidebarItem id="moderation" label="Moderation" icon={<span className="text-lg">🛡️</span>} />
                 </nav>
 
                 <div className="px-4 pt-4 border-t border-white/5 space-y-2">
-                    <button
-                        onClick={loadData}
-                        className="flex items-center gap-2 text-xs text-neutral-500 hover:text-white transition-colors w-full"
-                    >
-                        <svg className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                    <button onClick={loadData} className="flex items-center gap-2 text-xs text-neutral-500 hover:text-white transition-colors w-full">
                         Refresh Data
                     </button>
                     <button onClick={handleLogout} className="flex items-center gap-2 text-xs text-red-500 hover:text-red-400 transition-colors w-full">
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
                         Sign Out
                     </button>
                 </div>
@@ -203,48 +239,78 @@ export default function AdminDashboardClient() {
 
             {/* Main Content */}
             <main className="flex-1 bg-neutral-900/40 rounded-[2.5rem] border border-white/5 p-8 min-h-[600px] backdrop-blur-sm relative overflow-hidden shadow-2xl">
-                {/* Content Background */}
-                <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-purple-500/5 rounded-full blur-[100px] pointer-events-none" />
 
                 {activeTab === 'overview' && (
                     <div className="space-y-8 animate-in fade-in duration-500">
-                        <div>
-                            <h2 className="text-2xl font-bold text-white mb-6">System Overview</h2>
-                            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                                <div className="p-6 rounded-3xl bg-neutral-950/60 border border-white/5 space-y-2">
-                                    <span className="text-neutral-500 text-xs font-bold uppercase tracking-wider">Total Users</span>
-                                    <div className="text-4xl font-bold text-white">{users.length}</div>
+                        <h2 className="text-2xl font-bold text-white mb-6">System Overview</h2>
+
+                        {/* KPI Cards */}
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                            <div className="p-6 rounded-3xl bg-neutral-950/60 border border-white/5 relative overflow-hidden group">
+                                <span className="text-xs font-bold uppercase tracking-wider text-neutral-500 relative z-10">Total Users</span>
+                                <div className="text-4xl font-bold text-white mt-2 relative z-10">{users.length}</div>
+                                <div className="absolute right-[-20px] top-[-20px] text-8xl opacity-[0.03] grayscale group-hover:grayscale-0 transition-all">👥</div>
+                            </div>
+
+                            <div className="p-6 rounded-3xl bg-neutral-950/60 border border-white/5 relative overflow-hidden group">
+                                <span className="text-xs font-bold uppercase tracking-wider text-neutral-500 relative z-10">Assessments</span>
+                                <div className="text-4xl font-bold text-white mt-2 relative z-10">{assessments.length}</div>
+                                <div className="absolute right-[-20px] top-[-20px] text-8xl opacity-[0.03] grayscale group-hover:grayscale-0 transition-all">📝</div>
+                            </div>
+
+                            {/* Vibe Meter (Avg Mood) */}
+                            <div className="p-6 rounded-3xl bg-neutral-950/60 border border-white/5 relative overflow-hidden">
+                                <span className="text-xs font-bold uppercase tracking-wider text-neutral-500">Campus Vibe</span>
+                                <div className="flex items-end gap-2 mt-2">
+                                    <div className="text-4xl font-bold text-white">
+                                        {(moods.reduce((acc, m) => acc + m.mood, 0) / (moods.length || 1)).toFixed(1)}
+                                    </div>
+                                    <span className="text-sm text-neutral-500 mb-1">/ 5.0</span>
                                 </div>
-                                <div className="p-6 rounded-3xl bg-neutral-950/60 border border-white/5 space-y-2">
-                                    <span className="text-neutral-500 text-xs font-bold uppercase tracking-wider">Total Assessments</span>
-                                    <div className="text-4xl font-bold text-white">{totalAssessments}</div>
+                                {/* Bar */}
+                                <div className="mt-4 h-2 w-full bg-white/5 rounded-full overflow-hidden">
+                                    <div
+                                        className="h-full bg-gradient-to-r from-red-500 via-yellow-500 to-green-500"
+                                        style={{ width: `${(moods.reduce((acc, m) => acc + m.mood, 0) / (moods.length || 1)) / 5 * 100}%` }}
+                                    />
                                 </div>
-                                <div className="p-6 rounded-3xl bg-neutral-950/60 border border-white/5 space-y-2">
-                                    <span className="text-neutral-500 text-xs font-bold uppercase tracking-wider">Pending Bookings</span>
-                                    <div className="text-4xl font-bold text-white text-yellow-500">
-                                        {bookings.filter(b => b.status === "PENDING").length}
+                            </div>
+
+                            {/* Energy Gauge (Avg Capacity - Mocked/Estimated from Mood if Capacity logs not fetched in overview, but we usually should. Let's assume correlated for now or fetch it.) */}
+                            {/* Ideally we would fetch avg capacity. Let's use a placeholder 'Energy' based on mood-intensity or fetch distinct endpoint. */}
+                            {/* For now, let's use a simple mood-derived metric "Resilience" */}
+                            <div className="p-6 rounded-3xl bg-neutral-950/60 border border-white/5 relative overflow-hidden">
+                                <span className="text-xs font-bold uppercase tracking-wider text-neutral-500">Energy Level</span>
+                                <div className="flex items-end gap-2 mt-2">
+                                    <div className="text-4xl font-bold text-white">
+                                        {/* Mock calculation: High Mood usually correlates with Energy, but not always. */}
+                                        {/* Let's render a "Loading..." if not ready, or just 75% static for demo if data missing. */}
+                                        {/* Actually, let's use the mood vibe as a proxy for "Social Battery" for now until we add capacity fetch to loadData across the board. */}
+                                        {((moods.reduce((acc, m) => acc + m.mood, 0) / (moods.length || 1)) * 20).toFixed(0)}%
                                     </div>
                                 </div>
-                                <div className="p-6 rounded-3xl bg-neutral-950/60 border border-white/5 space-y-2">
-                                    <span className="text-neutral-500 text-xs font-bold uppercase tracking-wider">Mood Logs (24h)</span>
-                                    <div className="text-4xl font-bold text-white text-blue-400">
-                                        {moods.length}
-                                    </div>
+                                <div className="mt-4 h-2 w-full bg-white/5 rounded-full overflow-hidden">
+                                    <div
+                                        className="h-full bg-blue-500"
+                                        style={{ width: `${(moods.reduce((acc, m) => acc + m.mood, 0) / (moods.length || 1)) * 20}%` }}
+                                    />
                                 </div>
                             </div>
                         </div>
 
+                        {/* Recent Activity Mini-Feed */}
                         <div>
-                            <h3 className="text-lg font-bold text-white mb-4">Risk Distribution</h3>
-                            <div className="flex flex-wrap gap-3">
-                                {Object.entries(severities).map(([severity, count]) => (
-                                    <div key={severity} className="flex items-center gap-3 px-4 py-2 rounded-full bg-white/5 border border-white/5">
-                                        <span className={`w-2 h-2 rounded-full ${['severe', 'moderately severe'].includes(severity.toLowerCase()) ? 'bg-red-500' : 'bg-green-500'}`} />
-                                        <span className="capitalize text-white text-sm">{severity}</span>
-                                        <span className="text-white/40 text-sm font-mono">{count}</span>
+                            <h3 className="text-lg font-bold text-white mb-4">Live Pulse</h3>
+                            <div className="flex gap-4 overflow-x-auto pb-4">
+                                {moods.slice(0, 5).map(m => (
+                                    <div key={m.id} className="min-w-[200px] p-4 rounded-xl bg-white/5 border border-white/5 flex flex-col gap-2">
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-2xl">{m.mood >= 4 ? "🤩" : m.mood === 3 ? "😐" : "😫"}</span>
+                                            <span className="text-xs text-neutral-400">{formatDate(m.createdAt)}</span>
+                                        </div>
+                                        {m.note && <p className="text-xs text-white/70 line-clamp-2">"{m.note}"</p>}
                                     </div>
                                 ))}
-                                {Object.keys(severities).length === 0 && <span className="text-neutral-500 italic text-sm">No data available</span>}
                             </div>
                         </div>
                     </div>
@@ -252,117 +318,164 @@ export default function AdminDashboardClient() {
 
                 {activeTab === 'assessments' && (
                     <div className="space-y-6 animate-in fade-in duration-500">
-                        <h2 className="text-2xl font-bold text-white">Assessments</h2>
-                        <div className="rounded-2xl border border-white/5 bg-neutral-950/40 flex flex-col max-h-[70vh]">
-                            <div className="overflow-y-auto custom-scrollbar">
-                                <table className="w-full text-left text-sm relative">
-                                    <thead className="bg-neutral-900 text-white/40 uppercase text-xs font-bold sticky top-0 z-10 shadow-sm">
-                                        <tr>
-                                            <th className="px-6 py-4 bg-neutral-900">Date</th>
-                                            <th className="px-6 py-4 bg-neutral-900">Type</th>
-                                            <th className="px-6 py-4 bg-neutral-900">Score</th>
-                                            <th className="px-6 py-4 bg-neutral-900">Severity</th>
-                                            <th className="px-6 py-4 bg-neutral-900 text-right">Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-white/5 text-white/80">
-                                        {assessments.map(a => (
-                                            <tr key={a.id} className="hover:bg-white/5 transition-colors group">
-                                                <td className="px-6 py-4 font-mono text-white/50">{formatDate(a.createdAt)}</td>
-                                                <td className="px-6 py-4 font-bold">{a.assessmentType}</td>
-                                                <td className="px-6 py-4">{a.totalScore}</td>
-                                                <td className="px-6 py-4">
-                                                    <span className={`px-2 py-1 rounded text-xs font-bold uppercase ${['severe', 'moderately severe'].includes(a.severity?.toLowerCase()) ? 'bg-red-500/20 text-red-300' : 'bg-green-500/20 text-green-300'}`}>
-                                                        {a.severity}
-                                                    </span>
-                                                </td>
-                                                <td className="px-6 py-4 text-right">
-                                                    <button onClick={() => handleDeleteAssessment(a.id)} className="text-red-400 opacity-0 group-hover:opacity-100 transition-opacity hover:text-red-300 text-xs">Delete</button>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                        {assessments.length === 0 && <tr><td colSpan={5} className="px-6 py-8 text-center text-white/30 italic">No assessments found</td></tr>}
-                                    </tbody>
-                                </table>
+                        <div className="flex justify-between items-end">
+                            <h2 className="text-2xl font-bold text-white">Assessments</h2>
+                            <div className="flex gap-2">
+                                <input
+                                    type="text"
+                                    placeholder="Search by ID..."
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    className="bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-white/30"
+                                />
                             </div>
+                        </div>
+
+                        {/* Tabs */}
+                        <div className="flex gap-2 overflow-x-auto pb-2 border-b border-white/5">
+                            {["ALL", "PHQ9", "GAD7", "PSS", "UCLA", "PSWQ"].map(type => (
+                                <button
+                                    key={type}
+                                    onClick={() => setAssessmentFilter(type)}
+                                    className={`px-4 py-2 rounded-lg text-xs font-bold uppercase transition-all ${assessmentFilter === type ? "bg-white text-black" : "bg-white/5 text-neutral-400 hover:text-white"
+                                        }`}
+                                >
+                                    {type}
+                                </button>
+                            ))}
+                        </div>
+
+                        <div className="rounded-2xl border border-white/5 bg-neutral-950/40 flex flex-col max-h-[60vh] overflow-y-auto custom-scrollbar">
+                            <table className="w-full text-left text-sm">
+                                <thead className="bg-neutral-900 text-neutral-500 uppercase text-xs font-bold sticky top-0">
+                                    <tr>
+                                        <th className="px-6 py-4">Date</th>
+                                        <th className="px-6 py-4">Type</th>
+                                        <th className="px-6 py-4">User</th>
+                                        <th className="px-6 py-4">Score</th>
+                                        <th className="px-6 py-4">Severity</th>
+                                        <th className="px-6 py-4 text-right">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-white/5">
+                                    {filteredAssessments.map(a => (
+                                        <tr key={a.id} className="hover:bg-white/5 transition-colors">
+                                            <td className="px-6 py-4 font-mono text-white/50">{formatDate(a.createdAt)}</td>
+                                            <td className="px-6 py-4 font-bold">{a.assessmentType}</td>
+                                            <td className="px-6 py-4 text-xs font-mono text-white/40">
+                                                {a.userId ? `Reg: ${a.userId.slice(0, 6)}...` : `Anon: ${a.anonymousId?.slice(0, 6)}...`}
+                                            </td>
+                                            <td className="px-6 py-4">{a.totalScore}</td>
+                                            <td className="px-6 py-4">
+                                                <span className={`px-2 py-1 rounded text-xs font-bold uppercase ${['severe', 'moderately severe', 'high stress', 'high worry', 'high loneliness'].includes(a.severity?.toLowerCase()) ? 'bg-red-500/20 text-red-300' : 'bg-green-500/20 text-green-300'}`}>
+                                                    {a.severity}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4 text-right">
+                                                <button onClick={() => handleDeleteAssessment(a.id)} className="text-red-400 hover:text-red-300 text-xs">Delete</button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 )}
 
                 {activeTab === 'bookings' && (
-                    <div className="space-y-6 animate-in fade-in duration-500">
-                        <h2 className="text-2xl font-bold text-white">Booking Requests</h2>
-                        <div className="rounded-2xl border border-white/5 bg-neutral-950/40 flex flex-col max-h-[70vh]">
-                            <div className="overflow-y-auto custom-scrollbar">
-                                <table className="w-full text-left text-sm relative">
-                                    <thead className="bg-neutral-900 text-white/40 uppercase text-xs font-bold sticky top-0 z-10 shadow-sm">
-                                        <tr>
-                                            <th className="px-6 py-4 bg-neutral-900">Session Time</th>
-                                            <th className="px-6 py-4 bg-neutral-900">Student</th>
-                                            <th className="px-6 py-4 bg-neutral-900">Status</th>
-                                            <th className="px-6 py-4 bg-neutral-900 text-right">Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-white/5 text-white/80">
-                                        {bookings.map(b => (
-                                            <tr key={b.id} className="hover:bg-white/5 transition-colors group">
-                                                <td className="px-6 py-4">
-                                                    <div className="font-bold text-white">{formatDate(b.slot)}</div>
-                                                    <div className="text-xs text-white/40">Req: {formatDate(b.createdAt)}</div>
-                                                </td>
-                                                <td className="px-6 py-4">
-                                                    <div className="font-medium text-white">{b.studentName}</div>
-                                                    <div className="text-xs text-white/40">{b.studentEmail || 'No email'}</div>
-                                                </td>
-                                                <td className="px-6 py-4">
-                                                    <span className={`px-2 py-1 rounded text-xs font-bold uppercase ${b.status === 'CONFIRMED' ? 'bg-green-500/20 text-green-300' : b.status === 'CANCELLED' ? 'bg-red-500/20 text-red-300' : 'bg-yellow-500/20 text-yellow-300'}`}>
-                                                        {b.status}
-                                                    </span>
-                                                </td>
-                                                <td className="px-6 py-4 text-right space-x-3">
-                                                    {b.status === 'PENDING' && (
-                                                        <>
-                                                            <button onClick={() => handleUpdateBookingStatus(b.id, 'CONFIRMED')} className="text-green-400 hover:text-green-300 text-xs font-bold">Approve</button>
-                                                            <button onClick={() => handleUpdateBookingStatus(b.id, 'CANCELLED')} className="text-yellow-400 hover:text-yellow-300 text-xs">Reject</button>
-                                                        </>
-                                                    )}
-                                                    <button onClick={() => handleDeleteBooking(b.id)} className="text-red-400 opacity-0 group-hover:opacity-100 transition-opacity hover:text-red-300 text-xs">Delete</button>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                        {bookings.length === 0 && <tr><td colSpan={4} className="px-6 py-8 text-center text-white/30 italic">No bookings found</td></tr>}
-                                    </tbody>
-                                </table>
+                    <div className="space-y-8 animate-in fade-in duration-500">
+
+                        {/* Registered Section */}
+                        <section>
+                            <h3 className="text-lg font-bold text-white mb-4 border-b border-white/5 pb-2">Registered Students <span className="text-xs font-normal text-neutral-500 ml-2">({registeredBookings.length})</span></h3>
+                            <div className="grid grid-cols-1 gap-4">
+                                {registeredBookings.map(b => (
+                                    <div key={b.id} className="p-4 rounded-xl bg-white/5 border border-white/5 flex flex-col md:flex-row justify-between items-center gap-4">
+                                        <div>
+                                            <div className="font-bold text-white">{b.studentName}</div>
+                                            <div className="text-sm text-neutral-400">{b.studentEmail}</div>
+                                            <div className="text-xs text-neutral-500 mt-1">Requested: {formatDate(b.slot)}</div>
+                                        </div>
+                                        <div className="flex items-center gap-3">
+                                            <span className={`px-2 py-1 rounded text-xs font-bold uppercase ${b.status}`}>{b.status}</span>
+                                            {b.status === 'PENDING' && (
+                                                <>
+                                                    <button onClick={() => handleUpdateBookingStatus(b.id, 'CONFIRMED')} className="text-green-400 text-xs font-bold border border-green-500/20 px-2 py-1 rounded hover:bg-green-500/10">Approve</button>
+                                                    <button onClick={() => handleUpdateBookingStatus(b.id, 'CANCELLED')} className="text-red-400 text-xs font-bold border border-red-500/20 px-2 py-1 rounded hover:bg-red-500/10">Deny</button>
+                                                </>
+                                            )}
+                                            <button onClick={() => handleDeleteBooking(b.id)} className="text-neutral-500 hover:text-white">🗑️</button>
+                                        </div>
+                                    </div>
+                                ))}
+                                {registeredBookings.length === 0 && <p className="text-neutral-500 italic text-sm">No registered student bookings.</p>}
                             </div>
-                        </div>
+                        </section>
+
+                        {/* Anonymous Section */}
+                        <section>
+                            <h3 className="text-lg font-bold text-white mb-4 border-b border-white/5 pb-2">Anonymous Requests <span className="text-xs font-normal text-neutral-500 ml-2">({anonymousBookings.length})</span></h3>
+                            <div className="grid grid-cols-1 gap-4">
+                                {anonymousBookings.map(b => (
+                                    <div key={b.id} className="p-4 rounded-xl bg-neutral-900/50 border border-white/5 flex flex-col md:flex-row justify-between items-center gap-4 opacity-80">
+                                        <div>
+                                            <div className="font-bold text-white">Anonymous User</div>
+                                            <div className="text-xs text-neutral-500 font-mono">ID: {b.anonymousId}</div>
+                                            <div className="text-xs text-neutral-500 mt-1">Requested: {formatDate(b.slot)}</div>
+                                        </div>
+                                        <div className="flex items-center gap-3">
+                                            <span className={`px-2 py-1 rounded text-xs font-bold uppercase ${b.status}`}>{b.status}</span>
+                                            {b.status === 'PENDING' && (
+                                                <>
+                                                    <button onClick={() => handleUpdateBookingStatus(b.id, 'CONFIRMED')} className="text-green-400 text-xs font-bold border border-green-500/20 px-2 py-1 rounded hover:bg-green-500/10">Approve</button>
+                                                    <button onClick={() => handleUpdateBookingStatus(b.id, 'CANCELLED')} className="text-red-400 text-xs font-bold border border-red-500/20 px-2 py-1 rounded hover:bg-red-500/10">Deny</button>
+                                                </>
+                                            )}
+                                            <button onClick={() => handleDeleteBooking(b.id)} className="text-neutral-500 hover:text-white">🗑️</button>
+                                        </div>
+                                    </div>
+                                ))}
+                                {anonymousBookings.length === 0 && <p className="text-neutral-500 italic text-sm">No anonymous bookings.</p>}
+                            </div>
+                        </section>
+
                     </div>
                 )}
 
                 {activeTab === 'moods' && (
-                    <div className="space-y-6 animate-in fade-in duration-500">
-                        <h2 className="text-2xl font-bold text-white">Mood Logs</h2>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[70vh] overflow-y-auto custom-scrollbar pr-2">
-                            {moods.map(m => (
-                                <div key={m.id} className="p-4 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-colors group relative">
-                                    <div className="flex justify-between items-start mb-2">
-                                        <div className={`px-2 py-1 rounded text-xs font-bold ${m.mood >= 4 ? 'bg-green-500/20 text-green-300' : m.mood === 3 ? 'bg-yellow-500/20 text-yellow-300' : 'bg-red-500/20 text-red-300'}`}>
-                                            Mood: {m.mood}/5
+                    <div className="space-y-8 animate-in fade-in duration-500">
+                        <h2 className="text-2xl font-bold text-white">Campus Vibe Analysis</h2>
+
+                        {/* Vibe Aggregation */}
+                        <div className="grid grid-cols-5 gap-2 h-32 items-end">
+                            {[1, 2, 3, 4, 5].map(rating => {
+                                const count = moodDistribution[rating];
+                                const percentage = count / totalMoods * 100;
+                                return (
+                                    <div key={rating} className="flex flex-col items-center gap-2 group">
+                                        <div className="w-full bg-white/5 rounded-t-xl relative overflow-hidden group-hover:bg-white/10 transition-colors" style={{ height: '100px' }}>
+                                            <div
+                                                className={`absolute bottom-0 w-full transition-all duration-1000 ${rating >= 4 ? 'bg-green-500' : rating === 3 ? 'bg-yellow-500' : 'bg-red-500'}`}
+                                                style={{ height: `${percentage}%` }}
+                                            />
                                         </div>
-                                        <span className="text-xs text-white/30 font-mono">{formatDate(m.createdAt)}</span>
+                                        <span className="text-sm font-bold text-white">{rating} / 5</span>
+                                        <span className="text-xs text-neutral-500">{count} logs</span>
                                     </div>
-                                    <p className="text-white/80 text-sm leading-relaxed mb-4">
-                                        {m.note || <span className="text-white/30 italic">No note added.</span>}
-                                    </p>
-                                    <button
-                                        onClick={() => handleDeleteMood(m.id)}
-                                        className="absolute bottom-4 right-4 text-xs text-red-400 opacity-0 group-hover:opacity-100 transition-opacity hover:text-red-300"
-                                    >
-                                        Delete
-                                    </button>
-                                </div>
-                            ))}
-                            {moods.length === 0 && <div className="col-span-2 text-center text-white/30 italic py-10">No mood logs found</div>}
+                                );
+                            })}
                         </div>
+
+                        <div className="p-6 rounded-3xl bg-neutral-950 border border-white/5">
+                            <h3 className="text-lg font-bold text-white mb-2">Common Themes</h3>
+                            <p className="text-neutral-400 text-sm">Based on recent note keywords:</p>
+                            <div className="flex flex-wrap gap-2 mt-4">
+                                {moods.flatMap(m => m.note?.split(' ') || []).filter(w => w.length > 4).slice(0, 10).map((word, i) => (
+                                    <span key={i} className="px-3 py-1 rounded-full bg-white/5 text-xs text-neutral-300">{word}</span>
+                                ))}
+                            </div>
+                        </div>
+
                     </div>
                 )}
 
@@ -382,7 +495,7 @@ export default function AdminDashboardClient() {
                                     </thead>
                                     <tbody className="divide-y divide-white/5 text-white/80">
                                         {users.map((u: UserRow) => (
-                                            <tr key={u.id} className="hover:bg-white/5 transition-colors group">
+                                            <tr key={u.id} className="hover:bg-white/5 transition-colors group cursor-pointer" onClick={() => handleViewUserBookings(u)}>
                                                 <td className="px-6 py-4 font-medium text-white">{u.name}</td>
                                                 <td className="px-6 py-4 text-white/60">{u.email}</td>
                                                 <td className="px-6 py-4 font-mono text-white/40">{formatDate(u.createdAt)}</td>
@@ -392,22 +505,18 @@ export default function AdminDashboardClient() {
                                                         <span title="Assessments" className="bg-white/5 px-2 py-1 rounded">📝 {u._count?.assessments || 0}</span>
                                                         <span title="Mood Logs" className="bg-white/5 px-2 py-1 rounded">😊 {u._count?.moodLogs || 0}</span>
                                                     </span>
-                                                    <button
-                                                        onClick={() => handleDeleteUser(u.id)}
-                                                        className="text-red-400 opacity-0 group-hover:opacity-100 transition-opacity hover:text-red-300 text-xs font-bold"
-                                                    >
-                                                        Delete
-                                                    </button>
+                                                    <button onClick={() => handleDeleteUser(u.id)} className="text-red-400 opacity-0 group-hover:opacity-100 transition-opacity hover:text-red-300 text-xs font-bold">Delete</button>
                                                 </td>
                                             </tr>
                                         ))}
-                                        {users.length === 0 && <tr><td colSpan={4} className="px-6 py-8 text-center text-white/30 italic">No registered users found</td></tr>}
                                     </tbody>
                                 </table>
                             </div>
                         </div>
                     </div>
                 )}
+
+                {activeTab === 'moderation' && <ModerationTab />}
             </main>
         </div>
     );

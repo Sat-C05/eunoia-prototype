@@ -46,6 +46,9 @@ export async function GET(req: NextRequest) {
     }
 }
 
+// Force dynamic to ensure cookies are read correctly
+export const dynamic = "force-dynamic";
+
 export async function POST(req: NextRequest) {
     try {
         const session = await getSession();
@@ -54,6 +57,7 @@ export async function POST(req: NextRequest) {
         // Support both old 'slotTime' payload and new fuller payload
         const slotStr = body.slot || body.slotTime;
         const studentName = body.studentName || "Anonymous Student";
+        const studentEmail = body.studentEmail ?? null;
         const { userId } = body;
 
         if (!slotStr) {
@@ -69,16 +73,29 @@ export async function POST(req: NextRequest) {
             slotDate = new Date();
         }
 
+        // Determine User ID
+        let finalUserId = session?.userId || null;
+        let finalAnonymousId = session ? null : userId;
+
+        // Fallback: If no session but email provided, try to link to registered user
+        // (Note: In a strict prod app, we'd require auth, but for this prototype, this fixes the "Bookings not linking" issue)
+        if (!finalUserId && studentEmail) {
+            const userByEmail = await prisma.user.findUnique({ where: { email: studentEmail } });
+            if (userByEmail) {
+                finalUserId = userByEmail.id;
+                finalAnonymousId = null; // Clear anonymous ID if we found a real user
+            }
+        }
+
         const booking = await prisma.booking.create({
             data: {
                 studentName,
-                studentEmail: body.studentEmail ?? null,
+                studentEmail,
                 reason: body.reason ?? null,
                 slot: slotDate,
                 status: "PENDING",
-                // Logic: If we have a verified session, link to User. If not, store as anonymousId.
-                userId: session ? session.userId : null,
-                anonymousId: session ? null : userId // Use the client-provided ID as anonymousId
+                userId: finalUserId,
+                anonymousId: finalAnonymousId
             },
         });
 

@@ -7,9 +7,8 @@ const navLinks = [
     { href: '/', label: 'Home' },
     { href: '/assessment', label: 'Check-in' },
     { href: '/booking', label: 'Consult' },
-    { href: '/resources', label: 'Resources' },
-    { href: '/forum', label: 'Peer Support' },
-    { href: '/settings', label: 'Settings' },
+    { href: '/community', label: 'Support' },
+    { href: '/profile', label: 'Profile' },
 ];
 
 export function NavBar({ user }: { user?: { name?: string } | null }) {

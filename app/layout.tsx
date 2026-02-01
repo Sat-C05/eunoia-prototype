@@ -4,6 +4,8 @@ import './globals.css';
 import { AppShell } from '@/components/AppShell';
 import { getSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import GuideWidget from '@/components/guide/GuideWidget';
+import { ThemeProvider } from '@/components/ThemeProvider';
 
 export const metadata: Metadata = {
   title: 'Eunoia – Student Mental Health Companion',
@@ -42,7 +44,12 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <body>
-        <AppShell user={user}>{children}</AppShell>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <AppShell user={user}>
+            {children}
+            <GuideWidget />
+          </AppShell>
+        </ThemeProvider>
       </body>
     </html>
   );

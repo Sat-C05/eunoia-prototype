@@ -22,6 +22,7 @@ export async function GET(req: NextRequest) {
             reason: true,
             slot: true,
             status: true,
+            anonymousId: true,
         },
     });
 
