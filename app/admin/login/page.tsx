@@ -37,55 +37,63 @@ export default function AdminLoginPage() {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center p-4">
-            <div className="w-full max-w-md bg-neutral-900/50 backdrop-blur-xl border border-white/5 rounded-2xl p-8 shadow-2xl relative overflow-hidden">
+        <div className="min-h-screen flex items-center justify-center p-6 relative overflow-hidden font-heading text-white">
+            {/* EXECUTIVE VIGNETTE */}
+            <div className="fixed inset-0 z-0 pointer-events-none bg-vignette-light dark:bg-vignette-dark" />
 
-                {/* Ambient Glow */}
-                <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/10 rounded-full blur-3xl pointer-events-none" />
-                <div className="absolute bottom-0 left-0 w-32 h-32 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
+            {/* Background Ambience */}
+            <div className="fixed top-0 left-0 w-full h-full overflow-hidden z-0 pointer-events-none">
+                <div className="absolute bottom-[20%] left-[20%] w-[60%] h-[60%] bg-purple-900/10 rounded-full blur-[120px] animate-pulse" />
+            </div>
+
+            <div className="w-full max-w-md bg-surface-card border border-border rounded-[2rem] p-10 shadow-2xl backdrop-blur-xl relative overflow-hidden z-10 transition-all hover:border-primary/20">
 
                 <div className="relative z-10 text-center space-y-8">
-                    <div className="space-y-2">
-                        <div className="mx-auto w-12 h-12 rounded-xl bg-gradient-to-br from-neutral-800 to-neutral-900 border border-white/5 flex items-center justify-center text-xl shadow-inner">
+                    <div className="space-y-4">
+                        <div className="mx-auto w-16 h-16 rounded-2xl bg-surface-hover border border-border flex items-center justify-center text-3xl shadow-lg">
                             🔒
                         </div>
-                        <h1 className="text-2xl font-bold text-white tracking-tight">Admin Gateway</h1>
-                        <p className="text-sm text-neutral-500">Secure Access Restricted</p>
+                        <div>
+                            <h1 className="text-3xl font-black tracking-tight text-foreground">Admin Gateway</h1>
+                            <p className="text-sm font-medium text-muted-foreground uppercase tracking-widest mt-1">Authorized Personnel Only</p>
+                        </div>
                     </div>
 
-                    <form onSubmit={handleLogin} className="space-y-4">
+                    <form onSubmit={handleLogin} className="space-y-6">
                         <div className="space-y-2 text-left">
-                            <label className="text-xs font-bold uppercase tracking-widest text-neutral-500 ml-1">
-                                Passcode
+                            <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-1">
+                                Secure Passcode
                             </label>
                             <input
                                 type="password"
                                 value={passcode}
                                 onChange={(e) => setPasscode(e.target.value)}
                                 placeholder="••••••••"
-                                className="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-white/20 focus:outline-none focus:border-white/20 focus:ring-1 focus:ring-white/20 transition-all font-mono tracking-widest text-center"
+                                className="w-full bg-surface-hover/50 border border-border rounded-xl px-5 py-4 text-foreground text-center text-lg tracking-[0.5em] placeholder:tracking-normal placeholder:text-muted-foreground/30 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-mono"
                                 autoFocus
                             />
                         </div>
 
                         {error && (
-                            <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-200 text-xs font-medium animate-pulse">
-                                ⚠️ {error}
+                            <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-500 text-xs font-bold animate-in fade-in slide-in-from-top-2 flex items-center justify-center gap-2">
+                                <span>⚠️</span> {error}
                             </div>
                         )}
 
                         <button
                             type="submit"
                             disabled={isLoading}
-                            className="w-full bg-white text-black font-bold py-3 rounded-lg hover:bg-neutral-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_20px_rgba(255,255,255,0.1)] hover:shadow-[0_0_30px_rgba(255,255,255,0.2)]"
+                            className="w-full bg-foreground text-background font-bold py-4 rounded-xl hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg uppercase tracking-wider text-xs"
                         >
-                            {isLoading ? "Verifying..." : "Authenticate"}
+                            {isLoading ? "Verifying Credentials..." : "Authenticate Access"}
                         </button>
                     </form>
 
-                    <p className="text-[10px] text-neutral-600 font-mono">
-                        UNAUTHORIZED ACCESS IS PROHIBITED
-                    </p>
+                    <div className="pt-4 border-t border-border/50">
+                        <p className="text-[10px] text-muted-foreground font-mono opacity-70">
+                            SYSTEM ID: EUNOIA-SECURE-V1
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>

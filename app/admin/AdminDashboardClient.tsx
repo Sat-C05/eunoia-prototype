@@ -4,9 +4,6 @@ import { useEffect, useState } from "react";
 import ModerationTab from "./ModerationTab";
 
 // --- Types ---
-
-
-
 type AssessmentRow = {
     id: string;
     createdAt: string;
@@ -60,14 +57,11 @@ function formatDate(input: string) {
 
 export default function AdminDashboardClient() {
     const [activeTab, setActiveTab] = useState<Tab>('overview');
-    // const [severitySummary, setSeveritySummary] = useState<SeveritySummaryResponse | null>(null);
     const [assessments, setAssessments] = useState<AssessmentRow[]>([]);
     const [bookings, setBookings] = useState<BookingRow[]>([]);
     const [moods, setMoods] = useState<MoodRow[]>([]);
     const [users, setUsers] = useState<UserRow[]>([]);
     const [isLoading, setIsLoading] = useState(true);
-
-    // if (isLoading) return <div className="text-white p-12 text-center animate-pulse">Loading Admin Console...</div>;
 
     const [assessmentFilter, setAssessmentFilter] = useState("ALL");
     const [searchQuery, setSearchQuery] = useState("");
@@ -77,19 +71,17 @@ export default function AdminDashboardClient() {
             setIsLoading(true);
             const [, assessmentsRes, bookingsRes, moodsRes, usersRes] = await Promise.all([
                 fetch("/api/admin/severity-summary", { cache: "no-store" }),
-                fetch("/api/admin/assessments/recent?limit=200", { cache: "no-store" }), // Increased limit for detailed view
+                fetch("/api/admin/assessments/recent?limit=200", { cache: "no-store" }),
                 fetch("/api/admin/bookings/recent?limit=100", { cache: "no-store" }),
                 fetch("/api/admin/moods/recent?limit=100", { cache: "no-store" }),
                 fetch("/api/admin/users", { cache: "no-store" }),
             ]);
 
-            // const severity = severityRes.ok ? await severityRes.json() : null;
             const assessmentsJson = assessmentsRes.ok ? await assessmentsRes.json() : { assessments: [] };
             const bookingsJson = bookingsRes.ok ? await bookingsRes.json() : { bookings: [] };
             const moodsJson = moodsRes.ok ? await moodsRes.json() : { moods: [] };
             const usersJson = usersRes.ok ? await usersRes.json() : { users: [] };
 
-            // setSeveritySummary(severity);
             setAssessments(assessmentsJson.assessments ?? []);
             setBookings(bookingsJson.bookings ?? []);
             setMoods(moodsJson.moods ?? []);
@@ -115,14 +107,12 @@ export default function AdminDashboardClient() {
         return true;
     });
 
-    // Bookings Splitting (FIXED)
-    // Registered = Has a student Email (and likely a Name)
-    // Anonymous = No Email, just an ID (or manually entered name but no email usually)
-    const registeredBookings = bookings.filter(b => !!b.studentEmail); // Simple check: If email exists, it's registered
-    const anonymousBookings = bookings.filter(b => !b.studentEmail);   // If no email, it's anonymous/guest
+    // Bookings Splitting
+    const registeredBookings = bookings.filter(b => !!b.studentEmail);
+    const anonymousBookings = bookings.filter(b => !b.studentEmail);
 
     // Mood Analysis - Vibe Check
-    const moodDistribution = [0, 0, 0, 0, 0, 0]; // Index 1-5 (ignore 0)
+    const moodDistribution = [0, 0, 0, 0, 0, 0];
     moods.forEach(m => {
         if (m.mood >= 1 && m.mood <= 5) moodDistribution[m.mood]++;
     });
@@ -170,142 +160,123 @@ export default function AdminDashboardClient() {
         setUsers((prev) => prev.filter((u) => u.id !== id));
     }
 
-    // --- Render Components ---
+    // --- User Details (Future) ---
+    async function handleViewUserBookings(user: UserRow) {
+        console.log("View user", user);
+    }
+
+    if (isLoading) return (
+        <div className="flex justify-center py-40">
+            <div className="w-10 h-10 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
+        </div>
+    );
 
     const SidebarItem = ({ id, label, icon }: { id: Tab | 'users', label: string, icon: React.ReactNode }) => (
         <button
             onClick={() => setActiveTab(id as Tab)}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 text-sm font-medium ${activeTab === id
-                ? "bg-white/10 text-white shadow-lg border border-white/5"
-                : "text-neutral-400 hover:text-white hover:bg-white/5"
+            className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all duration-300 text-sm font-bold tracking-wide ${activeTab === id
+                ? "bg-primary text-primary-foreground shadow-lg scale-105 ring-1 ring-primary/50"
+                : "text-muted-foreground hover:text-foreground hover:bg-surface-hover hover:scale-105 active:scale-95"
                 }`}
         >
-            <span className={activeTab === id ? "text-purple-300" : "text-neutral-500"}>{icon}</span>
+            <span className="text-xl">{icon}</span>
             {label}
         </button>
     );
 
-
-    // --- User Details Modal ---
-    // --- User Details Modal (Planned Feature) ---
-    // const [selectedUser, setSelectedUser] = useState<UserRow | null>(null);
-    // const [selectedUserBookings, setSelectedUserBookings] = useState<BookingRow[]>([]);
-    // const [isUserModalOpen, setIsUserModalOpen] = useState(false);
-
-    async function handleViewUserBookings(user: UserRow) {
-        // Feature disabled for now to fix build vars
-        console.log("View user", user);
-        /* 
-        setSelectedUser(user);
-        setIsUserModalOpen(true);
-        setSelectedUserBookings([]); 
-        ...
-        */
-    }
-
-    if (isLoading) return <div className="text-white p-12 text-center animate-pulse">Loading Admin Console...</div>;
-
     return (
-        <div className="flex flex-col md:flex-row gap-8 min-h-[80vh]">
+        <div className="flex flex-col lg:flex-row gap-8 min-h-screen relative font-heading text-foreground">
+            {/* VIGNETTE & BG - RESTORED JEWEL TONE */}
+            <div className="fixed inset-0 z-0 pointer-events-none bg-vignette-light dark:bg-vignette-dark" />
+
+            <div className="fixed top-0 right-0 w-full h-full overflow-hidden z-0 pointer-events-none">
+                <div className="absolute top-[30%] right-[30%] w-[40%] h-[40%] bg-purple-500/5 rounded-full blur-[120px] animate-pulse" />
+            </div>
+
             {/* Sidebar */}
-            <aside className="w-full md:w-64 flex-shrink-0 space-y-6">
-                <div className="px-4">
-                    <h1 className="text-xl font-bold text-white tracking-tight">Admin Console</h1>
-                    <p className="text-xs text-brand-300 opacity-60">Eunoia Management</p>
+            <aside className="w-full lg:w-72 flex-shrink-0 space-y-8 z-10 p-6 lg:p-0">
+                <div className="px-4 pt-4">
+                    <h1 className="text-3xl font-black text-foreground tracking-tighter">Admin <span className="text-primary block text-lg font-medium tracking-normal">Console</span></h1>
                 </div>
 
-                <nav className="space-y-1">
-                    <SidebarItem id="overview" label="Overview" icon={<span className="text-lg">📊</span>} />
-                    <SidebarItem id="assessments" label="Assessments" icon={<span className="text-lg">📝</span>} />
-                    <SidebarItem id="bookings" label="Bookings" icon={<span className="text-lg">📅</span>} />
-                    <SidebarItem id="moods" label="Mood Analysis" icon={<span className="text-lg">☁️</span>} />
-                    <SidebarItem id="users" label="Users" icon={<span className="text-lg">👥</span>} />
-                    <SidebarItem id="moderation" label="Moderation" icon={<span className="text-lg">🛡️</span>} />
+                <nav className="space-y-2">
+                    <SidebarItem id="overview" label="Overview" icon="📊" />
+                    <SidebarItem id="assessments" label="Assessments" icon="📝" />
+                    <SidebarItem id="bookings" label="Bookings" icon="📅" />
+                    <SidebarItem id="moods" label="Vibe Check" icon="☁️" />
+                    <SidebarItem id="users" label="Users" icon="👥" />
+                    <SidebarItem id="moderation" label="Moderation" icon="🛡️" />
                 </nav>
 
-                <div className="px-4 pt-4 border-t border-white/5 space-y-2">
-                    <button onClick={loadData} className="flex items-center gap-2 text-xs text-neutral-500 hover:text-white transition-colors w-full">
+                <div className="px-4 pt-4 border-t border-border/50 space-y-3">
+                    <button onClick={loadData} className="flex items-center gap-2 text-xs font-bold text-muted-foreground hover:text-primary transition-colors w-full uppercase tracking-wider p-2 hover:bg-surface-hover rounded-lg border border-transparent hover:border-primary/20">
                         Refresh Data
                     </button>
-                    <button onClick={handleLogout} className="flex items-center gap-2 text-xs text-red-500 hover:text-red-400 transition-colors w-full">
+                    <button onClick={handleLogout} className="flex items-center gap-2 text-xs font-bold text-red-500 hover:text-red-600 transition-colors w-full uppercase tracking-wider p-2 hover:bg-red-500/10 rounded-lg border border-transparent hover:border-red-500/20">
                         Sign Out
                     </button>
                 </div>
             </aside>
 
-            {/* Main Content */}
-            <main className="flex-1 bg-neutral-900/40 rounded-[2.5rem] border border-white/5 p-8 min-h-[600px] backdrop-blur-sm relative overflow-hidden shadow-2xl">
+            {/* Main Content - RESTORED SURFACE CARDS */}
+            <main className="flex-1 bg-surface-card border border-border rounded-[2.5rem] p-8 lg:p-12 min-h-[600px] backdrop-blur-xl relative overflow-hidden shadow-2xl z-10 m-4 lg:m-0 lg:my-8 lg:mr-8 shadow-black/10">
 
                 {activeTab === 'overview' && (
-                    <div className="space-y-8 animate-in fade-in duration-500">
-                        <h2 className="text-2xl font-bold text-white mb-6">System Overview</h2>
+                    <div className="space-y-12 animate-in fade-in duration-500">
+                        <div className="flex justify-between items-end border-b border-border/50 pb-6">
+                            <div>
+                                <h2 className="text-3xl font-black text-foreground tracking-tight">System Overview</h2>
+                                <p className="text-muted-foreground font-medium">Real-time platform metrics.</p>
+                            </div>
+                        </div>
 
-                        {/* KPI Cards */}
-                        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                            <div className="p-6 rounded-3xl bg-neutral-950/60 border border-white/5 relative overflow-hidden group">
-                                <span className="text-xs font-bold uppercase tracking-wider text-neutral-500 relative z-10">Total Users</span>
-                                <div className="text-4xl font-bold text-white mt-2 relative z-10">{users.length}</div>
-                                <div className="absolute right-[-20px] top-[-20px] text-8xl opacity-[0.03] grayscale group-hover:grayscale-0 transition-all">👥</div>
+                        {/* KPI Cards - SHARPER BORDERS & SHADOWS */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+                            <div className="p-8 rounded-[2rem] bg-surface-card border border-border relative overflow-hidden group hover:shadow-xl transition-all hover:border-primary hover:scale-[1.02] duration-300">
+                                <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground relative z-10">Total Users</span>
+                                <div className="text-5xl font-black text-foreground mt-4 relative z-10 group-hover:scale-110 transition-transform origin-left">{users.length}</div>
+                                <div className="absolute right-[-20px] top-[-20px] text-9xl opacity-[0.03] grayscale group-hover:grayscale-0 transition-all">👥</div>
                             </div>
 
-                            <div className="p-6 rounded-3xl bg-neutral-950/60 border border-white/5 relative overflow-hidden group">
-                                <span className="text-xs font-bold uppercase tracking-wider text-neutral-500 relative z-10">Assessments</span>
-                                <div className="text-4xl font-bold text-white mt-2 relative z-10">{assessments.length}</div>
-                                <div className="absolute right-[-20px] top-[-20px] text-8xl opacity-[0.03] grayscale group-hover:grayscale-0 transition-all">📝</div>
+                            <div className="p-8 rounded-[2rem] bg-surface-card border border-border relative overflow-hidden group hover:shadow-xl transition-all hover:border-primary hover:scale-[1.02] duration-300">
+                                <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground relative z-10">Assessments</span>
+                                <div className="text-5xl font-black text-foreground mt-4 relative z-10 group-hover:scale-110 transition-transform origin-left">{assessments.length}</div>
+                                <div className="absolute right-[-20px] top-[-20px] text-9xl opacity-[0.03] grayscale group-hover:grayscale-0 transition-all">📝</div>
                             </div>
 
-                            {/* Vibe Meter (Avg Mood) */}
-                            <div className="p-6 rounded-3xl bg-neutral-950/60 border border-white/5 relative overflow-hidden">
-                                <span className="text-xs font-bold uppercase tracking-wider text-neutral-500">Campus Vibe</span>
-                                <div className="flex items-end gap-2 mt-2">
-                                    <div className="text-4xl font-bold text-white">
+                            {/* Vibe Meter */}
+                            <div className="p-8 rounded-[2rem] bg-surface-card border border-border relative overflow-hidden group hover:shadow-xl transition-all hover:border-primary hover:scale-[1.02] duration-300">
+                                <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Campus Vibe</span>
+                                <div className="flex items-end gap-2 mt-4">
+                                    <div className="text-5xl font-black text-foreground group-hover:scale-110 transition-transform origin-left">
                                         {(moods.reduce((acc, m) => acc + m.mood, 0) / (moods.length || 1)).toFixed(1)}
                                     </div>
-                                    <span className="text-sm text-neutral-500 mb-1">/ 5.0</span>
-                                </div>
-                                {/* Bar */}
-                                <div className="mt-4 h-2 w-full bg-white/5 rounded-full overflow-hidden">
-                                    <div
-                                        className="h-full bg-gradient-to-r from-red-500 via-yellow-500 to-green-500"
-                                        style={{ width: `${(moods.reduce((acc, m) => acc + m.mood, 0) / (moods.length || 1)) / 5 * 100}%` }}
-                                    />
+                                    <span className="text-sm text-muted-foreground mb-1 font-bold">/ 5.0</span>
                                 </div>
                             </div>
 
-                            {/* Energy Gauge (Avg Capacity - Mocked/Estimated from Mood if Capacity logs not fetched in overview, but we usually should. Let's assume correlated for now or fetch it.) */}
-                            {/* Ideally we would fetch avg capacity. Let's use a placeholder 'Energy' based on mood-intensity or fetch distinct endpoint. */}
-                            {/* For now, let's use a simple mood-derived metric "Resilience" */}
-                            <div className="p-6 rounded-3xl bg-neutral-950/60 border border-white/5 relative overflow-hidden">
-                                <span className="text-xs font-bold uppercase tracking-wider text-neutral-500">Energy Level</span>
-                                <div className="flex items-end gap-2 mt-2">
-                                    <div className="text-4xl font-bold text-white">
-                                        {/* Mock calculation: High Mood usually correlates with Energy, but not always. */}
-                                        {/* Let's render a "Loading..." if not ready, or just 75% static for demo if data missing. */}
-                                        {/* Actually, let's use the mood vibe as a proxy for "Social Battery" for now until we add capacity fetch to loadData across the board. */}
+                            <div className="p-8 rounded-[2rem] bg-surface-card border border-border relative overflow-hidden group hover:shadow-xl transition-all hover:border-primary hover:scale-[1.02] duration-300">
+                                <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Energy Level</span>
+                                <div className="flex items-end gap-2 mt-4">
+                                    <div className="text-5xl font-black text-foreground group-hover:scale-110 transition-transform origin-left">
                                         {((moods.reduce((acc, m) => acc + m.mood, 0) / (moods.length || 1)) * 20).toFixed(0)}%
                                     </div>
-                                </div>
-                                <div className="mt-4 h-2 w-full bg-white/5 rounded-full overflow-hidden">
-                                    <div
-                                        className="h-full bg-blue-500"
-                                        style={{ width: `${(moods.reduce((acc, m) => acc + m.mood, 0) / (moods.length || 1)) * 20}%` }}
-                                    />
                                 </div>
                             </div>
                         </div>
 
                         {/* Recent Activity Mini-Feed */}
                         <div>
-                            <h3 className="text-lg font-bold text-white mb-4">Live Pulse</h3>
-                            <div className="flex gap-4 overflow-x-auto pb-4">
+                            <h3 className="text-lg font-bold text-foreground mb-6 border-b border-border/50 pb-2">Live Pulse</h3>
+                            <div className="flex gap-4 overflow-x-auto pb-6 custom-scrollbar">
                                 {moods.slice(0, 5).map(m => (
-                                    <div key={m.id} className="min-w-[200px] p-4 rounded-xl bg-white/5 border border-white/5 flex flex-col gap-2">
-                                        <div className="flex items-center gap-2">
-                                            <span className="text-2xl">{m.mood >= 4 ? "🤩" : m.mood === 3 ? "😐" : "😫"}</span>
-                                            <span className="text-xs text-neutral-400">{formatDate(m.createdAt)}</span>
+                                    <div key={m.id} className="min-w-[240px] p-6 rounded-[1.5rem] bg-surface-hover border border-border flex flex-col gap-3 group relative hover:-translate-y-1 transition-transform shadow-sm hover:shadow-md">
+                                        <div className="flex items-center gap-3">
+                                            <span className="text-3xl filter grayscale group-hover:grayscale-0 transition-all">{m.mood >= 4 ? "🤩" : m.mood === 3 ? "😐" : "😫"}</span>
+                                            <span className="text-[10px] font-bold text-muted-foreground uppercase">{formatDate(m.createdAt)}</span>
                                         </div>
-                                        {m.note && <p className="text-xs text-white/70 line-clamp-2">&quot;{m.note}&quot;</p>}
-                                        <button onClick={() => handleDeleteMood(m.id)} className="text-xs text-red-500 hover:text-red-400 mt-1">Delete</button>
+                                        {m.note && <p className="text-xs text-foreground/70 font-medium italic line-clamp-2">&quot;{m.note}&quot;</p>}
+                                        <button onClick={() => handleDeleteMood(m.id)} className="text-[10px] font-bold text-red-500 hover:text-red-600 mt-auto opacity-0 group-hover:opacity-100 transition-opacity uppercase tracking-wider text-right">Delete Log</button>
                                     </div>
                                 ))}
                             </div>
@@ -314,27 +285,31 @@ export default function AdminDashboardClient() {
                 )}
 
                 {activeTab === 'assessments' && (
-                    <div className="space-y-6 animate-in fade-in duration-500">
-                        <div className="flex justify-between items-end">
-                            <h2 className="text-2xl font-bold text-white">Assessments</h2>
-                            <div className="flex gap-2">
+                    <div className="space-y-8 animate-in fade-in duration-500">
+                        <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 border-b border-border/50 pb-6">
+                            <div>
+                                <h2 className="text-3xl font-black text-foreground tracking-tight">Assessments</h2>
+                                <p className="text-muted-foreground font-medium">Review student screening results.</p>
+                            </div>
+                            <div className="relative">
+                                <span className="absolute left-3 top-2.5 text-muted-foreground">🔍</span>
                                 <input
                                     type="text"
-                                    placeholder="Search by ID..."
+                                    placeholder="Search ID..."
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-white/30"
+                                    className="pl-10 pr-4 py-2.5 bg-surface-hover border border-border rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all w-64 shadow-sm focus:shadow-md"
                                 />
                             </div>
                         </div>
 
-                        {/* Tabs */}
-                        <div className="flex gap-2 overflow-x-auto pb-2 border-b border-white/5">
+                        {/* Tabs - SHARPER ACTIVE STATES */}
+                        <div className="flex gap-2 overflow-x-auto pb-4 custom-scrollbar">
                             {["ALL", "PHQ9", "GAD7", "PSS", "UCLA", "PSWQ"].map(type => (
                                 <button
                                     key={type}
                                     onClick={() => setAssessmentFilter(type)}
-                                    className={`px-4 py-2 rounded-lg text-xs font-bold uppercase transition-all ${assessmentFilter === type ? "bg-white text-black" : "bg-white/5 text-neutral-400 hover:text-white"
+                                    className={`px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all border ${assessmentFilter === type ? "bg-primary text-primary-foreground border-primary shadow-md ring-1 ring-primary/50" : "bg-surface-hover text-muted-foreground border-border hover:bg-surface-card hover:border-primary/30"
                                         }`}
                                 >
                                     {type}
@@ -342,167 +317,180 @@ export default function AdminDashboardClient() {
                             ))}
                         </div>
 
-                        <div className="rounded-2xl border border-white/5 bg-neutral-950/40 flex flex-col max-h-[60vh] overflow-y-auto custom-scrollbar">
-                            <table className="w-full text-left text-sm">
-                                <thead className="bg-neutral-900 text-neutral-500 uppercase text-xs font-bold sticky top-0">
-                                    <tr>
-                                        <th className="px-6 py-4">Date</th>
-                                        <th className="px-6 py-4">Type</th>
-                                        <th className="px-6 py-4">User</th>
-                                        <th className="px-6 py-4">Score</th>
-                                        <th className="px-6 py-4">Severity</th>
-                                        <th className="px-6 py-4 text-right">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-white/5">
-                                    {filteredAssessments.map(a => (
-                                        <tr key={a.id} className="hover:bg-white/5 transition-colors">
-                                            <td className="px-6 py-4 font-mono text-white/50">{formatDate(a.createdAt)}</td>
-                                            <td className="px-6 py-4 font-bold">{a.assessmentType}</td>
-                                            <td className="px-6 py-4 text-xs font-mono text-white/40">
-                                                {a.userId ? `Reg: ${a.userId.slice(0, 6)}...` : `Anon: ${a.anonymousId?.slice(0, 6)}...`}
-                                            </td>
-                                            <td className="px-6 py-4">{a.totalScore}</td>
-                                            <td className="px-6 py-4">
-                                                <span className={`px-2 py-1 rounded text-xs font-bold uppercase ${['severe', 'moderately severe', 'high stress', 'high worry', 'high loneliness'].includes(a.severity?.toLowerCase()) ? 'bg-red-500/20 text-red-300' : 'bg-green-500/20 text-green-300'}`}>
-                                                    {a.severity}
-                                                </span>
-                                            </td>
-                                            <td className="px-6 py-4 text-right">
-                                                <button onClick={() => handleDeleteAssessment(a.id)} className="text-red-400 hover:text-red-300 text-xs">Delete</button>
-                                            </td>
+                        <div className="rounded-[2rem] border border-border bg-surface-card overflow-hidden shadow-sm">
+                            <div className="max-h-[60vh] overflow-y-auto custom-scrollbar">
+                                <table className="w-full text-left text-sm">
+                                    <thead className="bg-surface-hover text-muted-foreground uppercase text-[10px] font-bold tracking-widest sticky top-0 z-10 backdrop-blur-md shadow-sm">
+                                        <tr>
+                                            <th className="px-6 py-4">Date</th>
+                                            <th className="px-6 py-4">Type</th>
+                                            <th className="px-6 py-4">User Ref</th>
+                                            <th className="px-6 py-4">Score</th>
+                                            <th className="px-6 py-4">Severity</th>
+                                            <th className="px-6 py-4 text-right">Action</th>
                                         </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+                                    </thead>
+                                    <tbody className="divide-y divide-border/50">
+                                        {filteredAssessments.map(a => (
+                                            <tr key={a.id} className="hover:bg-surface-hover transition-colors group">
+                                                <td className="px-6 py-4 font-mono text-xs text-muted-foreground">{formatDate(a.createdAt)}</td>
+                                                <td className="px-6 py-4 font-bold text-foreground">{a.assessmentType}</td>
+                                                <td className="px-6 py-4 text-xs font-mono text-muted-foreground truncate max-w-[150px]">
+                                                    {a.userId ? `Reg: ${a.userId}` : `Anon: ${a.anonymousId}`}
+                                                </td>
+                                                <td className="px-6 py-4 font-bold">{a.totalScore}</td>
+                                                <td className="px-6 py-4">
+                                                    <span className={`px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border ${['severe', 'moderately severe', 'high stress', 'high worry', 'high loneliness'].includes(a.severity?.toLowerCase()) ? 'bg-red-500/10 text-red-600 border-red-500/20' : 'bg-green-500/10 text-green-600 border-green-500/20'}`}>
+                                                        {a.severity}
+                                                    </span>
+                                                </td>
+                                                <td className="px-6 py-4 text-right">
+                                                    <button onClick={() => handleDeleteAssessment(a.id)} className="text-red-400 hover:text-red-500 text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity uppercase tracking-wider bg-transparent border border-red-200 dark:border-red-900 rounded px-2 py-1 hover:bg-red-50 dark:hover:bg-red-900/20">Delete</button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 )}
 
                 {activeTab === 'bookings' && (
-                    <div className="space-y-8 animate-in fade-in duration-500">
+                    <div className="space-y-12 animate-in fade-in duration-500">
+                        <div className="border-b border-border/50 pb-6">
+                            <h2 className="text-3xl font-black text-foreground tracking-tight">Bookings</h2>
+                            <p className="text-muted-foreground font-medium">Manage consultation requests.</p>
+                        </div>
 
                         {/* Registered Section */}
                         <section>
-                            <h3 className="text-lg font-bold text-white mb-4 border-b border-white/5 pb-2">Registered Students <span className="text-xs font-normal text-neutral-500 ml-2">({registeredBookings.length})</span></h3>
-                            <div className="grid grid-cols-1 gap-4 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+                            <h3 className="text-sm font-bold uppercase tracking-widest text-muted-foreground mb-4 pl-1">Registered Students <span className="opacity-50 ml-1">({registeredBookings.length})</span></h3>
+                            <div className="grid grid-cols-1 gap-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
                                 {registeredBookings.map(b => (
-                                    <div key={b.id} className="p-4 rounded-xl bg-white/5 border border-white/5 flex flex-col md:flex-row justify-between items-center gap-4">
+                                    <div key={b.id} className="p-6 rounded-[1.5rem] bg-surface-card border border-border flex flex-col md:flex-row justify-between items-center gap-6 hover:shadow-lg transition-all hover:border-primary/20 group">
                                         <div>
-                                            <div className="font-bold text-white">{b.studentName}</div>
-                                            <div className="text-sm text-neutral-400">{b.studentEmail}</div>
-                                            <div className="text-xs text-neutral-500 mt-1">Requested: {formatDate(b.slot)}</div>
+                                            <div className="font-bold text-lg text-foreground">{b.studentName}</div>
+                                            <div className="text-sm text-primary font-medium">{b.studentEmail}</div>
+                                            <div className="text-xs text-muted-foreground mt-2 font-mono bg-surface-hover inline-block px-2 py-1 rounded-md">Requested: {formatDate(b.slot)}</div>
                                         </div>
                                         <div className="flex items-center gap-3">
-                                            <span className={`px-2 py-1 rounded text-xs font-bold uppercase ${b.status}`}>{b.status}</span>
+                                            <span className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider border ${b.status === 'PENDING' ? 'bg-yellow-500/10 text-yellow-600 border-yellow-500/20' : b.status === 'CONFIRMED' ? 'bg-green-500/10 text-green-600 border-green-500/20' : 'bg-red-500/10 text-red-600 border-red-500/20'}`}>{b.status}</span>
                                             {b.status === 'PENDING' && (
-                                                <>
-                                                    <button onClick={() => handleUpdateBookingStatus(b.id, 'CONFIRMED')} className="text-green-400 text-xs font-bold border border-green-500/20 px-2 py-1 rounded hover:bg-green-500/10">Approve</button>
-                                                    <button onClick={() => handleUpdateBookingStatus(b.id, 'CANCELLED')} className="text-red-400 text-xs font-bold border border-red-500/20 px-2 py-1 rounded hover:bg-red-500/10">Deny</button>
-                                                </>
+                                                <div className="flex gap-2 ml-2 opacity-100 transition-opacity">
+                                                    <button onClick={() => handleUpdateBookingStatus(b.id, 'CONFIRMED')} className="bg-green-600 text-white text-xs font-bold px-4 py-2 rounded-xl hover:bg-green-700 shadow-sm border border-green-600">Approve</button>
+                                                    <button onClick={() => handleUpdateBookingStatus(b.id, 'CANCELLED')} className="bg-surface-hover text-foreground text-xs font-bold px-4 py-2 rounded-xl hover:bg-red-500 hover:text-white transition-colors border border-border shadow-sm">Deny</button>
+                                                </div>
                                             )}
-                                            <button onClick={() => handleDeleteBooking(b.id)} className="text-neutral-500 hover:text-white">🗑️</button>
+                                            <button onClick={() => handleDeleteBooking(b.id)} className="text-muted-foreground hover:text-red-500 p-2 ml-2 transition-colors opacity-0 group-hover:opacity-100 hover:scale-110">🗑️</button>
                                         </div>
                                     </div>
                                 ))}
-                                {registeredBookings.length === 0 && <p className="text-neutral-500 italic text-sm">No registered student bookings.</p>}
+                                {registeredBookings.length === 0 && <div className="p-8 text-center text-muted-foreground border border-dashed border-border rounded-2xl">No registered student bookings.</div>}
                             </div>
                         </section>
 
                         {/* Anonymous Section */}
                         <section>
-                            <h3 className="text-lg font-bold text-white mb-4 border-b border-white/5 pb-2">Anonymous Requests <span className="text-xs font-normal text-neutral-500 ml-2">({anonymousBookings.length})</span></h3>
+                            <h3 className="text-sm font-bold uppercase tracking-widest text-muted-foreground mb-4 pl-1">Anonymous Requests <span className="opacity-50 ml-1">({anonymousBookings.length})</span></h3>
                             <div className="grid grid-cols-1 gap-4 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
                                 {anonymousBookings.map(b => (
-                                    <div key={b.id} className="p-4 rounded-xl bg-neutral-900/50 border border-white/5 flex flex-col md:flex-row justify-between items-center gap-4 opacity-80">
+                                    <div key={b.id} className="p-6 rounded-[1.5rem] bg-surface-hover/30 border border-border border-dashed flex flex-col md:flex-row justify-between items-center gap-6 opacity-75 hover:opacity-100 transition-opacity hover:border-primary/20 hover:bg-surface-hover/50">
                                         <div>
-                                            <div className="font-bold text-white">Anonymous User</div>
-                                            <div className="text-xs text-neutral-500 font-mono">ID: {b.anonymousId}</div>
-                                            <div className="text-xs text-neutral-500 mt-1">Requested: {formatDate(b.slot)}</div>
+                                            <div className="font-bold text-foreground">Anonymous User</div>
+                                            <div className="text-xs text-muted-foreground font-mono">ID: {b.anonymousId}</div>
+                                            <div className="text-xs text-muted-foreground mt-1">Requested: {formatDate(b.slot)}</div>
                                         </div>
                                         <div className="flex items-center gap-3">
                                             <span className={`px-2 py-1 rounded text-xs font-bold uppercase ${b.status}`}>{b.status}</span>
                                             {b.status === 'PENDING' && (
-                                                <>
-                                                    <button onClick={() => handleUpdateBookingStatus(b.id, 'CONFIRMED')} className="text-green-400 text-xs font-bold border border-green-500/20 px-2 py-1 rounded hover:bg-green-500/10">Approve</button>
-                                                    <button onClick={() => handleUpdateBookingStatus(b.id, 'CANCELLED')} className="text-red-400 text-xs font-bold border border-red-500/20 px-2 py-1 rounded hover:bg-red-500/10">Deny</button>
-                                                </>
+                                                <div className="flex gap-2">
+                                                    <button onClick={() => handleUpdateBookingStatus(b.id, 'CONFIRMED')} className="text-green-600 text-xs font-bold hover:underline">Approve</button>
+                                                    <button onClick={() => handleUpdateBookingStatus(b.id, 'CANCELLED')} className="text-red-500 text-xs font-bold hover:underline">Deny</button>
+                                                </div>
                                             )}
-                                            <button onClick={() => handleDeleteBooking(b.id)} className="text-neutral-500 hover:text-white">🗑️</button>
+                                            <button onClick={() => handleDeleteBooking(b.id)} className="text-muted-foreground hover:text-red-500">🗑️</button>
                                         </div>
                                     </div>
                                 ))}
-                                {anonymousBookings.length === 0 && <p className="text-neutral-500 italic text-sm">No anonymous bookings.</p>}
+                                {anonymousBookings.length === 0 && <div className="p-8 text-center text-muted-foreground border border-dashed border-border rounded-2xl">No anonymous bookings.</div>}
                             </div>
                         </section>
-
                     </div>
                 )}
 
                 {activeTab === 'moods' && (
-                    <div className="space-y-8 animate-in fade-in duration-500">
-                        <h2 className="text-2xl font-bold text-white">Campus Vibe Analysis</h2>
+                    <div className="space-y-12 animate-in fade-in duration-500">
+                        <div className="border-b border-border/50 pb-6">
+                            <h2 className="text-3xl font-black text-foreground tracking-tight">Campus Vibe Analysis</h2>
+                            <p className="text-muted-foreground font-medium">Emotional trend tracking.</p>
+                        </div>
 
-                        {/* Vibe Aggregation */}
-                        <div className="grid grid-cols-5 gap-2 h-32 items-end">
+                        {/* Vibe Aggregation - RICHER COLORS */}
+                        <div className="grid grid-cols-5 gap-4 h-48 items-end p-8 bg-surface-hover rounded-[2rem] border border-border shadow-inner">
                             {[1, 2, 3, 4, 5].map(rating => {
                                 const count = moodDistribution[rating];
                                 const percentage = count / totalMoods * 100;
                                 return (
-                                    <div key={rating} className="flex flex-col items-center gap-2 group">
-                                        <div className="w-full bg-white/5 rounded-t-xl relative overflow-hidden group-hover:bg-white/10 transition-colors" style={{ height: '100px' }}>
+                                    <div key={rating} className="flex flex-col items-center gap-3 w-full h-full justify-end group">
+
+                                        <div className="w-full relative h-full flex items-end">
                                             <div
-                                                className={`absolute bottom-0 w-full transition-all duration-1000 ${rating >= 4 ? 'bg-green-500' : rating === 3 ? 'bg-yellow-500' : 'bg-red-500'}`}
-                                                style={{ height: `${percentage}%` }}
+                                                className={`w-full rounded-t-xl transition-all duration-1000 ${rating >= 4 ? 'bg-emerald-500 shadow-lg shadow-emerald-500/20' : rating === 3 ? 'bg-amber-500 shadow-lg shadow-amber-500/20' : 'bg-rose-500 shadow-lg shadow-rose-500/20'} opacity-90 group-hover:opacity-100 group-hover:scale-y-105`}
+                                                style={{ height: `${percentage}%`, minHeight: '10px' }}
                                             />
                                         </div>
-                                        <span className="text-sm font-bold text-white">{rating} / 5</span>
-                                        <span className="text-xs text-neutral-500">{count} logs</span>
+                                        <div className="text-center">
+                                            <span className="text-xl font-black text-foreground block">{rating}</span>
+                                            <span className="text-[10px] font-bold text-muted-foreground uppercase">{count} logs</span>
+                                        </div>
                                     </div>
                                 );
                             })}
                         </div>
 
-                        <div className="p-6 rounded-3xl bg-neutral-950 border border-white/5">
-                            <h3 className="text-lg font-bold text-white mb-2">Common Themes</h3>
-                            <p className="text-neutral-400 text-sm">Based on recent note keywords:</p>
-                            <div className="flex flex-wrap gap-2 mt-4">
+                        <div className="p-8 rounded-[2rem] bg-surface-card border border-border shadow-sm">
+                            <h3 className="text-lg font-bold text-foreground mb-4">Common Themes</h3>
+                            <div className="flex flex-wrap gap-3">
                                 {moods.flatMap(m => m.note?.split(' ') || []).filter(w => w.length > 4).slice(0, 10).map((word, i) => (
-                                    <span key={i} className="px-3 py-1 rounded-full bg-white/5 text-xs text-neutral-300">{word}</span>
+                                    <span key={i} className="px-4 py-2 rounded-xl bg-surface-hover text-sm font-medium text-foreground border border-border shadow-sm hover:shadow-md transition-all cursor-default">{word}</span>
                                 ))}
+                                {moods.length === 0 && <span className="text-muted-foreground italic">No sufficient data for analysis.</span>}
                             </div>
                         </div>
-
                     </div>
                 )}
 
                 {activeTab === 'users' && (
-                    <div className="space-y-6 animate-in fade-in duration-500">
-                        <h2 className="text-2xl font-bold text-white">Registered Users</h2>
-                        <div className="rounded-2xl border border-white/5 bg-neutral-950/40 flex flex-col max-h-[70vh]">
-                            <div className="overflow-y-auto custom-scrollbar">
+                    <div className="space-y-8 animate-in fade-in duration-500">
+                        <div className="border-b border-border/50 pb-6">
+                            <h2 className="text-3xl font-black text-foreground tracking-tight">Registered Users</h2>
+                            <p className="text-muted-foreground font-medium">Student database.</p>
+                        </div>
+                        <div className="rounded-[2rem] border border-border bg-surface-card overflow-hidden shadow-md">
+                            <div className="max-h-[70vh] overflow-y-auto custom-scrollbar">
                                 <table className="w-full text-left text-sm relative">
-                                    <thead className="bg-neutral-900 text-white/40 uppercase text-xs font-bold sticky top-0 z-10 shadow-sm">
+                                    <thead className="bg-surface-hover text-muted-foreground uppercase text-[10px] font-bold tracking-widest sticky top-0 z-10 backdrop-blur-md border-b border-border shadow-sm">
                                         <tr>
-                                            <th className="px-6 py-4 bg-neutral-900">Name</th>
-                                            <th className="px-6 py-4 bg-neutral-900">Email</th>
-                                            <th className="px-6 py-4 bg-neutral-900">Joined</th>
-                                            <th className="px-6 py-4 bg-neutral-900 text-right">Data</th>
+                                            <th className="px-6 py-4">Name</th>
+                                            <th className="px-6 py-4">Email</th>
+                                            <th className="px-6 py-4">Joined</th>
+                                            <th className="px-6 py-4 text-right">Activity Stats</th>
                                         </tr>
                                     </thead>
-                                    <tbody className="divide-y divide-white/5 text-white/80">
+                                    <tbody className="divide-y divide-border/50 text-foreground">
                                         {users.map((u: UserRow) => (
-                                            <tr key={u.id} className="hover:bg-white/5 transition-colors group cursor-pointer" onClick={() => handleViewUserBookings(u)}>
-                                                <td className="px-6 py-4 font-medium text-white">{u.name}</td>
-                                                <td className="px-6 py-4 text-white/60">{u.email}</td>
-                                                <td className="px-6 py-4 font-mono text-white/40">{formatDate(u.createdAt)}</td>
+                                            <tr key={u.id} className="hover:bg-surface-hover transition-colors group cursor-pointer" onClick={() => handleViewUserBookings(u)}>
+                                                <td className="px-6 py-4 font-bold">{u.name}</td>
+                                                <td className="px-6 py-4 text-muted-foreground">{u.email}</td>
+                                                <td className="px-6 py-4 font-mono text-xs text-muted-foreground">{formatDate(u.createdAt)}</td>
                                                 <td className="px-6 py-4 text-right flex items-center justify-end gap-3">
-                                                    <span className="inline-flex gap-2 text-xs">
-                                                        <span title="Bookings" className="bg-white/5 px-2 py-1 rounded">📅 {u._count?.bookings || 0}</span>
-                                                        <span title="Assessments" className="bg-white/5 px-2 py-1 rounded">📝 {u._count?.assessments || 0}</span>
-                                                        <span title="Mood Logs" className="bg-white/5 px-2 py-1 rounded">😊 {u._count?.moodLogs || 0}</span>
+                                                    <span className="inline-flex gap-2 text-[10px] font-bold uppercase tracking-wider">
+                                                        <span title="Bookings" className="bg-surface-hover px-2 py-1 rounded border border-border text-muted-foreground">📅 {u._count?.bookings || 0}</span>
+                                                        <span title="Assessments" className="bg-surface-hover px-2 py-1 rounded border border-border text-muted-foreground">📝 {u._count?.assessments || 0}</span>
+                                                        <span title="Mood Logs" className="bg-surface-hover px-2 py-1 rounded border border-border text-muted-foreground">😊 {u._count?.moodLogs || 0}</span>
                                                     </span>
-                                                    <button onClick={() => handleDeleteUser(u.id)} className="text-red-400 opacity-0 group-hover:opacity-100 transition-opacity hover:text-red-300 text-xs font-bold">Delete</button>
+                                                    <button onClick={(e) => { e.stopPropagation(); handleDeleteUser(u.id); }} className="text-red-500 opacity-0 group-hover:opacity-100 transition-opacity hover:text-red-600 text-xs font-bold uppercase ml-2 border border-red-500/20 px-2 py-1 rounded hover:bg-red-500/10">Delete</button>
                                                 </td>
                                             </tr>
                                         ))}

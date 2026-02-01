@@ -12,6 +12,7 @@ type FlaggedPost = {
 
 export default function ModerationTab() {
     const [posts, setPosts] = useState<FlaggedPost[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
         loadFlaggedPosts();
@@ -19,13 +20,14 @@ export default function ModerationTab() {
 
     async function loadFlaggedPosts() {
         try {
+            setIsLoading(true);
             const res = await fetch("/api/admin/moderation/posts");
             if (res.ok) {
                 const data = await res.json();
                 setPosts(data.posts || []);
             }
         } finally {
-            // done
+            setIsLoading(false);
         }
     }
 
@@ -39,33 +41,49 @@ export default function ModerationTab() {
         setPosts(prev => prev.filter(p => p.id !== id));
     }
 
+    if (isLoading) return <div className="p-8 text-center text-muted-foreground animate-pulse">Loading moderation queue...</div>;
+
     return (
-        <div className="space-y-6 animate-in fade-in duration-500">
-            <h2 className="text-2xl font-bold text-white">Content Moderation</h2>
-            <div className="rounded-2xl border border-white/5 bg-neutral-950/40 flex flex-col max-h-[70vh]">
-                <div className="overflow-y-auto custom-scrollbar">
+        <div className="space-y-8 animate-in fade-in duration-500">
+            <div className="border-b border-border/50 pb-6">
+                <h2 className="text-3xl font-black text-foreground tracking-tight">Content Moderation</h2>
+                <p className="text-muted-foreground font-medium">Review reported community content.</p>
+            </div>
+
+            <div className="rounded-[2rem] border border-border bg-surface-card overflow-hidden shadow-md">
+                <div className="max-h-[70vh] overflow-y-auto custom-scrollbar">
                     <table className="w-full text-left text-sm relative">
-                        <thead className="bg-neutral-900 text-white/40 uppercase text-xs font-bold sticky top-0 z-10 shadow-sm">
+                        <thead className="bg-surface-hover text-muted-foreground uppercase text-[10px] font-bold tracking-widest sticky top-0 z-10 backdrop-blur-md border-b border-border shadow-sm">
                             <tr>
-                                <th className="px-6 py-4 bg-neutral-900">Content</th>
-                                <th className="px-6 py-4 bg-neutral-900">User ID</th>
-                                <th className="px-6 py-4 bg-neutral-900 text-right">Actions</th>
+                                <th className="px-6 py-4">Content</th>
+                                <th className="px-6 py-4">User ID</th>
+                                <th className="px-6 py-4 text-right">Actions</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-white/5 text-white/80">
+                        <tbody className="divide-y divide-border/50 text-foreground">
                             {posts.map(p => (
-                                <tr key={p.id} className="hover:bg-white/5 transition-colors group">
-                                    <td className="px-6 py-4 max-w-md truncate" title={p.content}>
-                                        {p.content}
+                                <tr key={p.id} className="hover:bg-surface-hover transition-colors group">
+                                    <td className="px-6 py-4 max-w-md">
+                                        <p className="line-clamp-2 md:line-clamp-none font-medium">{p.content}</p>
+                                        <span className="text-[10px] text-muted-foreground block mt-1">{new Date(p.createdAt).toLocaleDateString()}</span>
                                     </td>
-                                    <td className="px-6 py-4 font-mono text-xs text-white/50">{p.anonymousId}</td>
-                                    <td className="px-6 py-4 text-right space-x-3">
-                                        <button onClick={() => handleAction(p.id, 'RESTORE')} className="text-green-400 hover:text-green-300 text-xs font-bold">Restore</button>
-                                        <button onClick={() => handleAction(p.id, 'DELETE')} className="text-red-400 hover:text-red-300 text-xs font-bold">Delete</button>
+                                    <td className="px-6 py-4 font-mono text-xs text-muted-foreground">{p.anonymousId}</td>
+                                    <td className="px-6 py-4 text-right">
+                                        <div className="flex justify-end gap-2">
+                                            <button onClick={() => handleAction(p.id, 'RESTORE')} className="text-green-600 bg-green-500/10 hover:bg-green-500/20 border border-green-500/20 px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-colors">Keep</button>
+                                            <button onClick={() => handleAction(p.id, 'DELETE')} className="text-red-500 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-colors">Remove</button>
+                                        </div>
                                     </td>
                                 </tr>
                             ))}
-                            {posts.length === 0 && <tr><td colSpan={3} className="px-6 py-8 text-center text-white/30 italic">No flagged content found</td></tr>}
+                            {posts.length === 0 && (
+                                <tr>
+                                    <td colSpan={3} className="px-6 py-12 text-center text-muted-foreground italic bg-surface-hover/30">
+                                        <span className="text-2xl block mb-2">🎉</span>
+                                        No flagged content to review.
+                                    </td>
+                                </tr>
+                            )}
                         </tbody>
                     </table>
                 </div>

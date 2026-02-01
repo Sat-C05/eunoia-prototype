@@ -16,11 +16,8 @@ export default function BookingPage() {
     const { notify } = useNotifications();
     const [userId, setUserId] = useState<string>("");
 
-    const weekDates = Array.from({ length: 7 }, (_, i) => {
-        const d = new Date();
-        d.setDate(d.getDate() + i + 1);
-        return d;
-    });
+    // Date state for hydration fix
+    const [weekDates, setWeekDates] = useState<Date[]>([]);
 
     const COUNSELORS = [
         {
@@ -65,6 +62,16 @@ export default function BookingPage() {
 
     useEffect(() => {
         setUserId(getOrCreateClientUserId());
+
+        // Generate dates client-side
+        const dates = Array.from({ length: 7 }, (_, i) => {
+            const d = new Date();
+            d.setDate(d.getDate() + i + 1);
+            return d;
+        });
+        setWeekDates(dates);
+        setSelectedDate(dates[0]);
+
         fetchBookings();
         fetchUserProfile();
     }, []);
@@ -99,8 +106,6 @@ export default function BookingPage() {
         }
     };
 
-    // ... (rest of function)
-
     const isSlotBooked = (date: Date, timeString: string) => {
         const slotDate = new Date(date);
         const [time, modifier] = timeString.split(' ');
@@ -119,8 +124,6 @@ export default function BookingPage() {
 
     const handleBook = async (timeString: string) => {
         if (!selectedCounselor) return;
-        // If not logged in & no email provided (future feature), we warn or just book as anon.
-        // For now, if logged in, we use profile.
 
         setSelectedSlot(timeString);
         setStatus('loading');
@@ -175,7 +178,7 @@ export default function BookingPage() {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const handleCounselorSelect = (c: any) => {
         setSelectedCounselor(c);
-        setSelectedDate(weekDates[0]);
+        setSelectedDate(weekDates.length > 0 ? weekDates[0] : new Date());
         setStep(2);
     };
 
@@ -191,33 +194,35 @@ export default function BookingPage() {
         : COUNSELORS.filter(c => c.tags.includes(filter));
 
     return (
-        <div className="min-h-screen bg-black text-white p-6 lg:p-12 relative overflow-hidden">
+        <div className="min-h-screen bg-background text-foreground relative overflow-hidden font-heading flex flex-col">
+            {/* EXECUTIVE VIGNETTE */}
+            <div className="fixed inset-0 z-0 pointer-events-none bg-vignette-light dark:bg-vignette-dark" />
 
             {/* Background Ambience */}
-            <div className="absolute top-0 right-0 w-full h-full overflow-hidden z-0 pointer-events-none">
-                <div className="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-900/10 rounded-full blur-[120px] animate-pulse" />
+            <div className="fixed top-0 right-0 w-full h-full overflow-hidden z-0 pointer-events-none">
+                <div className="absolute top-[10%] right-[5%] w-[40%] h-[40%] bg-blue-600/5 dark:bg-blue-900/10 rounded-full blur-[120px] animate-pulse" />
             </div>
 
-            <div className="max-w-6xl mx-auto relative z-10 space-y-12">
-                <header className="flex flex-col lg:flex-row justify-between items-end gap-6">
+            <div className="max-w-7xl mx-auto relative z-10 space-y-12 p-6 lg:p-12 w-full flex-grow">
+                <header className="flex flex-col lg:flex-row justify-between items-end gap-6 border-b border-border/50 pb-8">
                     <div>
-                        <h1 className="text-4xl font-light mb-2 text-white">Consultation Booking</h1>
-                        <p className="text-xl text-neutral-400 font-light">Connect with a professional for a confidential session.</p>
+                        <h1 className="text-4xl md:text-5xl font-black mb-2 text-foreground font-heading">Consultation</h1>
+                        <p className="text-xl text-muted-foreground font-medium">Connect with a professional for a confidential session.</p>
                     </div>
                     {step === 1 && (
                         <button
                             onClick={handleQuickBook}
-                            className="bg-white text-black px-6 py-3 rounded-full font-bold hover:scale-105 transition-transform flex items-center gap-2 shadow-xl shadow-white/10"
+                            className="bg-primary text-primary-foreground px-8 py-3 rounded-xl font-bold hover:scale-105 transition-transform flex items-center gap-3 shadow-lg hover:shadow-primary/20"
                         >
-                            <span className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
-                            I need someone ASAP
+                            <span className="h-2 w-2 rounded-full bg-green-400 animate-pulse border border-green-200" />
+                            Book ASAP
                         </button>
                     )}
                 </header>
 
                 <div className="min-h-[500px] relative">
                     {step === 1 && (
-                        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-300 max-w-4xl mx-auto">
+                        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-5xl mx-auto">
 
                             {/* Filters */}
                             <div className="flex flex-wrap gap-2">
@@ -225,9 +230,9 @@ export default function BookingPage() {
                                     <button
                                         key={f}
                                         onClick={() => setFilter(f)}
-                                        className={`px-4 py-2 rounded-full text-sm font-medium transition-all border ${filter === f
-                                            ? "bg-white text-black border-white"
-                                            : "bg-white/5 text-neutral-400 border-white/10 hover:border-white/30 hover:text-white"
+                                        className={`px-5 py-2.5 rounded-full text-sm font-bold transition-all border ${filter === f
+                                            ? "bg-foreground text-background border-foreground"
+                                            : "bg-surface-card text-muted-foreground border-border hover:border-primary/50 hover:text-primary"
                                             }`}
                                     >
                                         {f}
@@ -236,36 +241,36 @@ export default function BookingPage() {
                             </div>
 
                             {/* ROW LAYOUT (Vertical List) */}
-                            <div className="flex flex-col gap-4">
+                            <div className="flex flex-col gap-6">
                                 {filteredCounselors.map((c) => (
                                     <div
                                         key={c.id}
-                                        className="group relative flex flex-col md:flex-row items-start md:items-center gap-6 p-6 rounded-[1.5rem] border border-white/5 bg-white/[0.02] hover:bg-white/[0.05] transition-all hover:border-white/10 hover:shadow-xl hover:scale-[1.005]"
+                                        className="group relative flex flex-col md:flex-row items-start md:items-center gap-8 p-8 rounded-[2rem] border border-border bg-surface-card hover:bg-surface-hover hover:border-primary/30 transition-all hover:shadow-2xl hover:-translate-y-1 duration-300"
                                     >
                                         {/* Avatar */}
-                                        <div className={`w-16 h-16 shrink-0 rounded-2xl flex items-center justify-center text-xl font-bold text-white shadow-lg ${c.color} bg-opacity-80 backdrop-blur-md`}>
+                                        <div className={`w-20 h-20 shrink-0 rounded-2xl flex items-center justify-center text-2xl font-black text-white shadow-lg ${c.color} bg-opacity-90 backdrop-blur-md ring-4 ring-background`}>
                                             {c.avatar}
                                         </div>
 
                                         {/* Content info */}
-                                        <div className="flex-grow min-w-0 space-y-2">
+                                        <div className="flex-grow min-w-0 space-y-3">
                                             <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-                                                <h3 className="text-xl font-medium text-white group-hover:text-blue-200 transition-colors">
+                                                <h3 className="text-2xl font-bold text-foreground group-hover:text-primary transition-colors font-heading">
                                                     {c.name}
                                                 </h3>
-                                                <span className="px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-[10px] font-bold uppercase tracking-wider text-neutral-400">
+                                                <span className="px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-[10px] font-bold uppercase tracking-wider text-primary">
                                                     {c.role}
                                                 </span>
                                             </div>
 
-                                            <p className="text-sm text-neutral-400 truncate max-w-xl">
+                                            <p className="text-base text-muted-foreground truncate max-w-xl font-medium">
                                                 {c.bio}
                                             </p>
 
                                             {/* Tags Row */}
                                             <div className="flex flex-wrap gap-2 pt-1">
                                                 {c.tags.map(t => (
-                                                    <span key={t} className="text-[10px] px-2 py-0.5 rounded bg-white/5 text-neutral-500 border border-white/5">
+                                                    <span key={t} className="text-[10px] px-2.5 py-1 rounded-md bg-background border border-border text-muted-foreground font-bold uppercase">
                                                         {t}
                                                     </span>
                                                 ))}
@@ -273,17 +278,17 @@ export default function BookingPage() {
                                         </div>
 
                                         {/* Action Column */}
-                                        <div className="w-full md:w-auto flex flex-row md:flex-col items-center md:items-end gap-3 justify-between md:justify-center shrink-0 border-t md:border-t-0 md:border-l border-white/5 pt-4 md:pt-0 md:pl-6">
+                                        <div className="w-full md:w-auto flex flex-row md:flex-col items-center md:items-end gap-4 justify-between md:justify-center shrink-0 border-t md:border-t-0 md:border-l border-border/50 pt-6 md:pt-0 md:pl-8">
 
                                             {/* Next Available Badge */}
-                                            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-green-500/10 border border-green-500/20 text-green-300 text-[10px] font-bold uppercase tracking-wide">
+                                            <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-green-500/10 border border-green-500/20 text-green-600 dark:text-green-400 text-[10px] font-bold uppercase tracking-wide">
                                                 <span className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
                                                 {c.nextAvailable}
                                             </div>
 
                                             <button
                                                 onClick={() => handleCounselorSelect(c)}
-                                                className="px-6 py-2.5 rounded-xl bg-white text-black font-bold hover:bg-gray-200 transition-colors text-sm"
+                                                className="px-8 py-3 rounded-xl bg-foreground text-background font-bold hover:scale-105 transition-all text-sm shadow-md"
                                             >
                                                 Book Session
                                             </button>
@@ -295,22 +300,22 @@ export default function BookingPage() {
                     )}
 
                     {step === 2 && selectedCounselor && (
-                        <div className="bg-white/5 border border-white/10 rounded-[2.5rem] p-8 lg:p-12 shadow-2xl backdrop-blur-xl animate-in zoom-in-[0.99] duration-300">
+                        <div className="bg-surface-card/90 border border-border rounded-[2.5rem] p-8 lg:p-12 shadow-2xl backdrop-blur-xl animate-in zoom-in-[0.99] duration-300 max-w-5xl mx-auto">
 
-                            <div className="flex items-center justify-between mb-12 border-b border-white/5 pb-8">
+                            <div className="flex items-center justify-between mb-12 border-b border-border/50 pb-8">
                                 <div className="flex items-center gap-6">
                                     <button
                                         onClick={() => setStep(1)}
-                                        className="h-10 w-10 rounded-full bg-white/5 flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10 transition-colors"
+                                        className="h-12 w-12 rounded-full bg-surface-hover flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-border transition-colors font-bold text-xl"
                                     >
                                         ←
                                     </button>
                                     <div>
-                                        <p className="text-xs font-bold uppercase tracking-widest text-white/40 mb-1">Booking With</p>
-                                        <h2 className="text-2xl font-light text-white">{selectedCounselor.name}</h2>
+                                        <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-1">Booking With</p>
+                                        <h2 className="text-3xl font-bold text-foreground font-heading">{selectedCounselor.name}</h2>
                                     </div>
                                 </div>
-                                <div className={`hidden md:flex h-12 w-12 rounded-xl items-center justify-center font-bold ${selectedCounselor.color}`}>
+                                <div className={`hidden md:flex h-16 w-16 rounded-2xl items-center justify-center font-black text-white text-2xl shadow-lg ${selectedCounselor.color}`}>
                                     {selectedCounselor.avatar}
                                 </div>
                             </div>
@@ -318,7 +323,7 @@ export default function BookingPage() {
                             <div className="grid lg:grid-cols-2 gap-12">
                                 {/* Date Picker */}
                                 <div className="space-y-6">
-                                    <h3 className="text-lg font-medium text-white">Select Date</h3>
+                                    <h3 className="text-xl font-bold text-foreground font-heading">Select Date</h3>
                                     <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                                         {weekDates.map((date) => {
                                             const isSelected = date.toDateString() === selectedDate.toDateString();
@@ -326,13 +331,13 @@ export default function BookingPage() {
                                                 <button
                                                     key={date.toISOString()}
                                                     onClick={() => setSelectedDate(date)}
-                                                    className={`py-4 px-2 rounded-xl border text-sm font-medium transition-all ${isSelected
-                                                        ? 'border-blue-500 bg-blue-500/20 text-blue-100'
-                                                        : 'border-white/5 bg-neutral-900/50 text-neutral-400 hover:bg-white/5 hover:text-white'
+                                                    className={`py-4 px-2 rounded-xl border text-sm font-bold transition-all ${isSelected
+                                                        ? 'border-primary bg-primary/10 text-primary shadow-inner ring-1 ring-primary'
+                                                        : 'border-border bg-background/50 text-muted-foreground hover:bg-surface-hover hover:text-foreground'
                                                         }`}
                                                 >
-                                                    <span className="block text-xs uppercase opacity-70 mb-1">{date.toLocaleDateString('en-US', { weekday: 'short' })}</span>
-                                                    <span className="text-lg font-light">{date.getDate()}</span>
+                                                    <span className="block text-xs uppercase opacity-70 mb-1 font-medium">{date.toLocaleDateString('en-US', { weekday: 'short' })}</span>
+                                                    <span className="text-xl">{date.getDate()}</span>
                                                 </button>
                                             )
                                         })}
@@ -341,7 +346,7 @@ export default function BookingPage() {
 
                                 {/* Slot Picker */}
                                 <div className="space-y-6">
-                                    <h3 className="text-lg font-medium text-white">Select Time</h3>
+                                    <h3 className="text-xl font-bold text-foreground font-heading">Select Time</h3>
                                     <div className="grid grid-cols-2 gap-3">
                                         {ALL_SLOTS.map((slot) => {
                                             const booked = isSlotBooked(selectedDate, slot);
@@ -353,12 +358,12 @@ export default function BookingPage() {
                                                     onClick={() => !booked && handleBook(slot)}
                                                     disabled={booked || status === 'loading'}
                                                     className={`py-4 px-6 rounded-xl text-center transition-all ${booked
-                                                        ? 'bg-neutral-900 text-neutral-700 cursor-not-allowed border border-transparent'
-                                                        : 'bg-white/5 text-neutral-200 border border-white/5 hover:bg-white hover:text-black hover:border-white'
-                                                        } ${loading ? 'animate-pulse bg-blue-500/20' : ''}`}
+                                                        ? 'bg-surface-hover text-muted-foreground/50 cursor-not-allowed border border-transparent'
+                                                        : 'bg-background/50 text-foreground border border-border hover:bg-foreground hover:text-background font-medium'
+                                                        } ${loading ? 'animate-pulse bg-primary/20' : ''}`}
                                                 >
-                                                    <span className="text-sm font-medium">{slot}</span>
-                                                    {booked && <span className="block text-[10px] uppercase font-bold text-red-900/60 mt-1">Full</span>}
+                                                    <span className="text-sm">{slot}</span>
+                                                    {booked && <span className="block text-[10px] uppercase font-bold text-red-500/60 mt-1">Full</span>}
                                                 </button>
                                             );
                                         })}

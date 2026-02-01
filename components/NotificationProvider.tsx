@@ -71,37 +71,42 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
     return (
         <NotificationContext.Provider value={value}>
             {children}
-            <div
-                style={{
-                    position: 'fixed',
-                    top: '4rem',
-                    right: '1rem',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '0.5rem',
-                    zIndex: 60,
-                }}
-            >
+            <div className="fixed top-24 right-4 z-[100] flex flex-col gap-3 font-heading pointer-events-none">
                 {items.map((item) => (
                     <div
                         key={item.id}
-                        style={{
-                            minWidth: '220px',
-                            maxWidth: '320px',
-                            padding: '0.75rem 1rem',
-                            borderRadius: '0.75rem',
-                            backgroundColor:
-                                item.type === 'success'
-                                    ? 'rgba(22,163,74,0.9)'
-                                    : item.type === 'error'
-                                        ? 'rgba(220,38,38,0.9)'
-                                        : 'rgba(37,99,235,0.9)',
-                            color: '#f9fafb',
-                            fontSize: '0.9rem',
-                            boxShadow: '0 10px 30px rgba(15,23,42,0.9)',
-                        }}
+                        className={`pointer-events-auto min-w-[300px] max-w-sm px-5 py-4 rounded-xl border backdrop-blur-xl shadow-2xl flex items-center gap-3 transform transition-all duration-500 animate-in slide-in-from-right-10 fade-in
+                            ${item.type === 'success' ? 'bg-green-600/90 border-green-400/30 text-white' : ''}
+                            ${item.type === 'error' ? 'bg-red-600/90 border-red-400/30 text-white' : ''}
+                            ${item.type === 'info' ? 'bg-blue-600/90 border-blue-400/30 text-white' : ''}
+                        `}
                     >
-                        {item.message}
+                        {/* Icon */}
+                        <div className={`h-8 w-8 rounded-full flex items-center justify-center text-lg font-bold shadow-sm
+                            ${item.type === 'success' ? 'bg-green-500 text-white' : ''}
+                            ${item.type === 'error' ? 'bg-red-500 text-white' : ''}
+                            ${item.type === 'info' ? 'bg-blue-500 text-white' : ''}
+                        `}>
+                            {item.type === 'success' && '✓'}
+                            {item.type === 'error' && '!'}
+                            {item.type === 'info' && 'i'}
+                        </div>
+
+                        <div className="flex-1">
+                            <h4 className="font-bold text-sm uppercase tracking-wider opacity-90 mb-0.5">
+                                {item.type}
+                            </h4>
+                            <p className="text-sm font-medium leading-tight">
+                                {item.message}
+                            </p>
+                        </div>
+
+                        <button
+                            onClick={() => setItems((prev) => prev.filter((n) => n.id !== item.id))}
+                            className="opacity-60 hover:opacity-100 transition-opacity"
+                        >
+                            ✕
+                        </button>
                     </div>
                 ))}
             </div>

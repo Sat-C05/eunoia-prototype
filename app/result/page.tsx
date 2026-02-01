@@ -1,11 +1,10 @@
-// app/result/page.tsx
-'use client';
+"use client";
 
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { type AssessmentType } from '@/lib/assessmentConfig';
 import { getOrCreateClientUserId } from "@/lib/clientUserId";
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import HistoryLog from "@/components/assessment/HistoryLog";
 
 function getRecommendations(type: AssessmentType, severity: string): string[] {
@@ -93,8 +92,6 @@ function getMessage(severity: string | null) {
     return null;
 }
 
-import { Suspense } from 'react';
-
 function ResultContent() {
     const searchParams = useSearchParams();
     const router = useRouter();
@@ -110,6 +107,7 @@ function ResultContent() {
     const message = getMessage(severity);
     const recs = hasValidData ? getRecommendations(type as AssessmentType || 'PHQ9', severity!) : [];
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [userId, setUserId] = useState<string>("");
 
     useEffect(() => {
@@ -117,10 +115,13 @@ function ResultContent() {
     }, []);
 
     return (
-        <div className="min-h-screen bg-black text-white relative overflow-hidden py-10 px-6">
+        <div className="min-h-screen bg-background text-foreground relative overflow-hidden py-10 px-6 font-heading">
+            {/* EXECUTIVE VIGNETTE */}
+            <div className="fixed inset-0 z-0 pointer-events-none bg-vignette-light dark:bg-vignette-dark" />
+
             {/* Background Ambience */}
             <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0 pointer-events-none">
-                <div className="absolute top-[20%] right-[0%] w-[50%] h-[50%] bg-indigo-900/20 rounded-full blur-[100px] animate-pulse" />
+                <div className="absolute top-[20%] right-[0%] w-[50%] h-[50%] bg-blue-900/10 rounded-full blur-[100px] animate-pulse" />
             </div>
 
             <div className="relative z-10 max-w-6xl mx-auto grid lg:grid-cols-2 gap-12">
@@ -128,65 +129,65 @@ function ResultContent() {
                 {/* LEFT COL: LATEST RESULT */}
                 <div className="space-y-8 animate-in slide-in-from-bottom-6">
                     <div>
-                        <Link href="/assessment" className="text-sm font-bold text-neutral-500 hover:text-white mb-4 block">← Back to Assessment</Link>
-                        <h1 className="text-4xl font-light mb-2 text-white">Your Insights</h1>
-                        <p className="text-neutral-400">Analysis of your latest screening.</p>
+                        <Link href="/assessment" className="text-sm font-bold text-muted-foreground hover:text-primary mb-4 block transition-colors">← Back to Assessment</Link>
+                        <h1 className="text-4xl md:text-5xl font-black mb-2 text-foreground font-heading">Your Insights</h1>
+                        <p className="text-muted-foreground text-lg">Analysis of your latest screening.</p>
                     </div>
 
                     {!hasValidData ? (
-                        <div className="bg-neutral-900/50 border border-white/5 p-8 rounded-3xl">
-                            <p className="mb-6 text-neutral-400 text-sm">
+                        <div className="bg-surface-card border border-dashed border-border p-8 rounded-3xl">
+                            <p className="mb-6 text-muted-foreground text-sm font-medium">
                                 No recent clinical data found. Start a check-in.
                             </p>
                             <Link
                                 href="/assessment"
-                                className="inline-flex items-center justify-center rounded-lg bg-white px-6 py-2.5 text-sm font-bold text-black transition-all hover:opacity-90"
+                                className="inline-flex items-center justify-center rounded-xl bg-primary px-6 py-3 text-sm font-bold text-primary-foreground transition-all hover:scale-[1.02] shadow-md"
                             >
                                 Take Self-Assessment
                             </Link>
                         </div>
                     ) : (
-                        <div className="bg-white/5 backdrop-blur-xl border border-white/10 p-8 lg:p-10 rounded-[2.5rem] shadow-2xl">
-                            <div className="flex items-end justify-between mb-8 border-b border-white/5 pb-8">
+                        <div className="bg-surface-card/80 backdrop-blur-xl border border-border p-8 lg:p-10 rounded-[2.5rem] shadow-2xl">
+                            <div className="flex items-end justify-between mb-8 border-b border-border/50 pb-8">
                                 <div>
-                                    <p className="text-xs font-bold uppercase tracking-widest text-neutral-500 mb-2">Severity</p>
-                                    <p className="text-2xl font-medium text-purple-300">{severity}</p>
+                                    <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-2">Severity</p>
+                                    <p className="text-2xl font-bold text-primary">{severity}</p>
                                 </div>
                                 <div className="text-right">
-                                    <p className="text-xs font-bold uppercase tracking-widest text-neutral-500 mb-2">Score</p>
-                                    <p className="text-5xl font-light text-white">{score}</p>
+                                    <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-2">Score</p>
+                                    <p className="text-6xl font-black text-foreground">{score}</p>
                                 </div>
                             </div>
 
                             {message && (
-                                <div className="mb-8 p-6 rounded-2xl bg-indigo-500/10 border border-indigo-500/20">
-                                    <p className="font-semibold text-indigo-200 mb-2 text-lg">{message.heading}</p>
-                                    <p className="text-sm text-indigo-100/80 leading-relaxed max-w-lg">{message.body}</p>
+                                <div className="mb-8 p-6 rounded-2xl bg-primary/5 border border-primary/10">
+                                    <p className="font-bold text-primary mb-2 text-lg">{message.heading}</p>
+                                    <p className="text-sm text-foreground/80 leading-relaxed max-w-lg">{message.body}</p>
                                 </div>
                             )}
 
                             <div className="space-y-4">
-                                <h4 className="text-sm font-bold uppercase tracking-widest text-neutral-500">Recommendations</h4>
+                                <h4 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Recommendations</h4>
                                 <ul className="space-y-3">
-                                    {recs.map((line) => (
-                                        <li key={line} className="flex gap-3 text-sm text-neutral-300">
-                                            <span className="text-purple-500">→</span>
+                                    {recs.map((line, idx) => (
+                                        <li key={idx} className="flex gap-3 text-sm text-foreground/90 font-medium">
+                                            <span className="text-primary font-bold">→</span>
                                             {line}
                                         </li>
                                     ))}
                                 </ul>
                             </div>
 
-                            <div className="mt-8 pt-8 border-t border-white/5 flex gap-4">
+                            <div className="mt-8 pt-8 border-t border-border/50 flex gap-4">
                                 <Link
                                     href="/booking"
-                                    className="flex-1 py-3 bg-white text-black text-center font-bold rounded-xl hover:scale-[1.02] transition-transform"
+                                    className="flex-1 py-3 bg-foreground text-background text-center font-bold rounded-xl hover:scale-[1.02] transition-transform shadow-lg"
                                 >
                                     Book Counselor
                                 </Link>
                                 <button
                                     onClick={() => router.push('/assessment')}
-                                    className="px-6 py-3 border border-white/10 rounded-xl hover:bg-white/5 transition-colors text-sm font-medium"
+                                    className="px-6 py-3 border border-border rounded-xl hover:bg-surface-hover transition-colors text-sm font-bold text-foreground"
                                 >
                                     Retake
                                 </button>
@@ -198,14 +199,15 @@ function ResultContent() {
                 {/* RIGHT COL: HISTORY TIMELINE */}
                 <div className="space-y-8 animate-in slide-in-from-bottom-8 delay-100">
                     <div>
-                        <h2 className="text-2xl font-light mb-2 text-white">Your Timeline</h2>
-                        <p className="text-neutral-400">A history of your Mirrors and Snapshots.</p>
+                        <h2 className="text-3xl font-bold mb-2 text-foreground font-heading">Your Timeline</h2>
+                        <p className="text-muted-foreground text-lg">A history of your Mirrors and Snapshots.</p>
                     </div>
 
-                    <div className="bg-neutral-900/40 border border-white/5 rounded-[2.5rem] p-8 min-h-[500px] max-h-[800px] relative">
-                        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-neutral-900/80 rounded-[2.5rem] pointer-events-none z-10" />
+                    <div className="bg-surface-card/60 border border-border rounded-[2.5rem] p-8 min-h-[500px] max-h-[800px] relative shadow-inner">
+                        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-surface-card/90 rounded-[2.5rem] pointer-events-none z-10" />
                         <div className="overflow-y-auto h-full pb-20 custom-scrollbar relative z-0">
-                            {userId ? <HistoryLog userId={userId} /> : <div className="text-neutral-500">Loading history...</div>}
+                            {/* Note: HistoryLog might need internal styling updates, but the container is now set */}
+                            <HistoryLog userId={userId} />
                         </div>
                     </div>
                 </div>
@@ -217,7 +219,7 @@ function ResultContent() {
 
 export default function ResultPage() {
     return (
-        <Suspense fallback={<div className="text-center py-20 text-neutral-500">Loading result...</div>}>
+        <Suspense fallback={<div className="text-center py-20 text-muted-foreground animate-pulse">Loading result...</div>}>
             <ResultContent />
         </Suspense>
     );

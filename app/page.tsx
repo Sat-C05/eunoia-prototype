@@ -4,40 +4,52 @@ import Link from "next/link";
 
 export default function HomePage() {
   return (
-    <div className="space-y-16">
-      {/* Hero Section */}
-      <section className="relative py-20 px-8 md:px-12 overflow-hidden rounded-[2.5rem] bg-neutral-900 border border-white/5 shadow-2xl text-center">
-        {/* Ambient Background */}
-        <div className="absolute inset-0 bg-neutral-950/60 backdrop-blur-sm z-0" />
-        <div className="absolute -top-20 -right-20 w-[600px] h-[600px] bg-indigo-500/20 rounded-full blur-[130px] animate-pulse" style={{ animationDuration: '4s' }} />
-        <div className="absolute -bottom-20 -left-20 w-[500px] h-[500px] bg-teal-500/10 rounded-full blur-[100px] animate-pulse" style={{ animationDuration: '6s' }} />
+    <div className="relative space-y-20 pb-20 min-h-screen">
 
-        <div className="relative z-10 max-w-4xl mx-auto space-y-8">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs font-semibold text-white/70 uppercase tracking-widest backdrop-blur-md">
-            ✨ Your Campus Companion
+      {/* VIGNETTE & BACKGROUND LAYERS */}
+      {/* Light Mode: Subtle Cool Grey Vignette | Dark Mode: Deep Heavy Vignette */}
+      <div className="fixed inset-0 z-0 pointer-events-none bg-vignette-light dark:bg-vignette-dark" />
+
+      {/* Hero Section */}
+      <section className="relative py-12 px-6 md:px-10 overflow-hidden rounded-[2rem] border border-black/5 dark:border-white/5 shadow-2xl text-center transition-all duration-500 group max-w-5xl mx-auto bg-surface-card/60 backdrop-blur-md mt-4">
+
+        {/* Animated Background - EXECUTIVE SAPPHIRE */}
+        <div className="absolute inset-0 z-0 bg-background transition-colors duration-500" />
+        {/* Subtle, Deep Gradient */}
+        <div className="absolute inset-0 z-0 opacity-100 dark:opacity-100 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-100/50 via-background to-background dark:from-indigo-950/60 dark:via-background dark:to-background pointer-events-none" />
+
+        {/* CONTRAST LAYERS: Sapphire + Gold (Jewel Tones) */}
+        <div className="absolute -top-40 -left-40 w-96 h-96 bg-blue-600/10 dark:bg-indigo-500/10 rounded-full blur-[100px] animate-pulse" />
+        <div className="absolute top-20 right-20 w-80 h-80 bg-amber-500/10 dark:bg-amber-500/5 rounded-full blur-[80px] animate-float" />
+
+        <div className="relative z-10 space-y-8 animate-fade-in-up">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-surface-hover border border-border text-[11px] font-bold text-foreground/70 uppercase tracking-widest backdrop-blur-md shadow-sm">
+            ⭐ Professional Student Support
           </div>
 
-          <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-white leading-tight">
-            Find Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-300 via-purple-300 to-pink-300">Balance</span>.
+          <h1 className="text-5xl md:text-7xl font-black tracking-tight text-foreground leading-[1.1] font-heading drop-shadow-lg">
+            Find Your <br />
+            {/* JEWEL TONE GRADIENT */}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-700 via-indigo-700 to-amber-600 dark:from-indigo-400 dark:via-violet-400 dark:to-amber-400">
+              Balance.
+            </span>
           </h1>
 
-          <p className="text-xl text-white/60 leading-relaxed max-w-2xl mx-auto font-light">
-            Eunoia is your confidential space to assess well-being, log moods, and connect with support. Private, secure, and always here for you.
+          <p className="text-lg md:text-xl text-muted-foreground leading-relaxed max-w-2xl mx-auto font-medium">
+            The trusted platform for clarity, stability, and growth. <br className="hidden md:block" />
+            <span className="text-foreground font-semibold">Secure. Professional. Confidential.</span>
           </p>
 
-          <div className="flex flex-wrap justify-center gap-4 pt-4">
+          <div className="flex flex-wrap justify-center gap-4 pt-6">
             <Link
               href="/assessment"
-              className="group relative inline-flex items-center justify-center rounded-full bg-white px-8 py-4 text-sm font-bold text-black transition-all hover:scale-105 hover:shadow-[0_0_30px_rgba(255,255,255,0.3)]"
+              className="group relative inline-flex items-center justify-center rounded-xl bg-primary text-primary-foreground px-8 py-3.5 text-lg font-bold transition-all duration-300 hover:scale-[1.02] hover:shadow-lg shadow-indigo-500/20"
             >
-              Start Self-Assessment
-              <svg className="ml-2 w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-              </svg>
+              Start Check-in
             </Link>
             <Link
               href="/resources"
-              className="group inline-flex items-center justify-center rounded-full bg-white/5 border border-white/10 px-8 py-4 text-sm font-bold text-white transition-all hover:bg-white/10"
+              className="group inline-flex items-center justify-center rounded-xl bg-surface-card border border-border px-8 py-3.5 text-lg font-bold text-foreground transition-all duration-300 hover:border-primary hover:bg-surface-hover hover:shadow-md"
             >
               Explore Resources
             </Link>
@@ -45,55 +57,61 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Feature Grid */}
-      <section className="grid gap-8 md:grid-cols-3">
+      {/* Feature Grid - EXECUTIVE CARDS */}
+      <section className="relative z-10 grid gap-6 md:grid-cols-3 px-4 max-w-7xl mx-auto">
         {/* Card 1 */}
-        <div className="group relative rounded-3xl border border-white/5 bg-white/5 p-8 transition-all hover:-translate-y-2 hover:border-white/10 hover:bg-white/10">
-          <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-3xl pointer-events-none" />
-          <div className="relative z-10 space-y-4">
-            <div className="w-12 h-12 rounded-2xl bg-purple-500/20 flex items-center justify-center text-2xl">
-              📊
+        <div className="group relative rounded-[1.5rem] border border-border bg-surface-card p-8 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl overflow-hidden hover:border-indigo-500/50">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 rounded-full blur-[40px] group-hover:bg-indigo-500/10 transition-all" />
+          <div className="relative z-10 space-y-6">
+            <div className="w-12 h-12 rounded-xl bg-indigo-50 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 flex items-center justify-center text-2xl font-heading shadow-sm border border-indigo-100 dark:border-indigo-800">
+              ✨
             </div>
-            <h3 className="text-xl font-bold text-white">Validated Tools</h3>
-            <p className="text-sm text-white/50 leading-relaxed">
-              Use clinically-backed screenings like PHQ-9 and GAD-7 to gain clear insights into your mental health.
-            </p>
+            <div>
+              <h3 className="text-xl font-bold text-foreground mb-2 font-heading">Clarity</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Evidence-based tools specifically designed for student mental health.
+              </p>
+            </div>
           </div>
         </div>
 
         {/* Card 2 */}
-        <div className="group relative rounded-3xl border border-white/5 bg-white/5 p-8 transition-all hover:-translate-y-2 hover:border-white/10 hover:bg-white/10">
-          <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-3xl pointer-events-none" />
-          <div className="relative z-10 space-y-4">
-            <div className="w-12 h-12 rounded-2xl bg-blue-500/20 flex items-center justify-center text-2xl">
-              🛡️
+        <div className="group relative rounded-[1.5rem] border border-border bg-surface-card p-8 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl overflow-hidden hover:border-teal-500/50">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-teal-500/5 rounded-full blur-[40px] group-hover:bg-teal-500/10 transition-all" />
+          <div className="relative z-10 space-y-6">
+            <div className="w-12 h-12 rounded-xl bg-teal-50 dark:bg-teal-900/40 text-teal-700 dark:text-teal-300 flex items-center justify-center text-2xl font-heading shadow-sm border border-teal-100 dark:border-teal-800">
+              🔒
             </div>
-            <h3 className="text-xl font-bold text-white">Privacy First</h3>
-            <p className="text-sm text-white/50 leading-relaxed">
-              Your journey is yours alone. We prioritize anonymity and local data security above everything else.
-            </p>
+            <div>
+              <h3 className="text-xl font-bold text-foreground mb-2 font-heading">Security</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Local-first architecture ensures your data never leaves your device without consent.
+              </p>
+            </div>
           </div>
         </div>
 
         {/* Card 3 */}
-        <div className="group relative rounded-3xl border border-white/5 bg-white/5 p-8 transition-all hover:-translate-y-2 hover:border-white/10 hover:bg-white/10">
-          <div className="absolute inset-0 bg-gradient-to-br from-pink-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-3xl pointer-events-none" />
-          <div className="relative z-10 space-y-4">
-            <div className="w-12 h-12 rounded-2xl bg-pink-500/20 flex items-center justify-center text-2xl">
-              🤝
+        <div className="group relative rounded-[1.5rem] border border-border bg-surface-card p-8 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl overflow-hidden hover:border-amber-500/50">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/5 rounded-full blur-[40px] group-hover:bg-amber-500/10 transition-all" />
+          <div className="relative z-10 space-y-6">
+            <div className="w-12 h-12 rounded-xl bg-amber-50 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400 flex items-center justify-center text-2xl font-heading shadow-sm border border-amber-100 dark:border-amber-800">
+              💪
             </div>
-            <h3 className="text-xl font-bold text-white">Easy Support</h3>
-            <p className="text-sm text-white/50 leading-relaxed">
-              Connect with campus counselors or finding emergency resources takes just a few clicks.
-            </p>
+            <div>
+              <h3 className="text-xl font-bold text-foreground mb-2 font-heading">Strength</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Direct access to university counseling and crisis management resources.
+              </p>
+            </div>
           </div>
         </div>
       </section>
 
       {/* Footer Note */}
-      <div className="py-8 border-t border-white/5 text-center">
-        <p className="text-xs text-white/30">
-          ⚠️ For urgent help, please contact emergency services (911/988) or your campus crisis line.
+      <div className="relative z-10 py-12 border-t border-border/50 text-center">
+        <p className="text-xs font-bold text-muted-foreground opacity-60 uppercase tracking-widest">
+          Professional Standard Care
         </p>
       </div>
     </div>

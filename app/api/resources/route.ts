@@ -1,9 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { RESOURCES } from "@/lib/resourceList"; // Import seed data
+import { RESOURCES } from "@/lib/resourceList";
 
-export async function GET() {
+export async function GET(req: NextRequest) {
     try {
+        const { searchParams } = new URL(req.url);
+        const anonymousId = searchParams.get("anonymousId");
+
         // 1. Fetch from DB
         let resources = await prisma.resource.findMany({
             orderBy: { createdAt: 'desc' }
@@ -13,7 +16,6 @@ export async function GET() {
         if (resources.length === 0) {
             console.log("Seeding Resources from static list...");
 
-            // Map static list to DB format
             const seedData = RESOURCES.map(r => ({
                 id: r.id, // Keep original string IDs for consistency
                 title: r.title,
@@ -23,16 +25,29 @@ export async function GET() {
                 category: "Wellness"
             }));
 
-            // Transaction to insert all
             await prisma.$transaction(
                 seedData.map(data => prisma.resource.create({ data }))
             );
 
-            // Fetch again
             resources = await prisma.resource.findMany({ orderBy: { createdAt: 'desc' } });
         }
 
-        return NextResponse.json({ resources });
+        // 3. Check Bookmarks if userId is provided
+        let resourcesWithStatus = resources;
+        if (anonymousId) {
+            const savedIds = await prisma.savedResource.findMany({
+                where: { anonymousId },
+                select: { resourceId: true }
+            });
+            const savedSet = new Set(savedIds.map(s => s.resourceId));
+
+            resourcesWithStatus = resources.map(r => ({
+                ...r,
+                isBookmarked: savedSet.has(r.id)
+            }));
+        }
+
+        return NextResponse.json({ resources: resourcesWithStatus });
 
     } catch (error) {
         console.error("Resources GET Error:", error);
@@ -42,13 +57,6 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
     try {
-        // The 'req' argument was removed from the function signature.
-        // This line will now cause a runtime error because 'req' is undefined.
-        // If the intention was to remove the argument and also remove the body parsing,
-        // further changes would be needed.
-        // If the intention was to remove the argument and still access the request body,
-        // this would require a different approach depending on the framework/context.
-        // For Next.js API routes, 'req' is typically passed as an argument to access the request.
         const body = await req.json();
 
         // Basic Validation
@@ -63,7 +71,7 @@ export async function POST(req: NextRequest) {
                 link: body.link,
                 image: body.image || "/images/topics/default.png", // Fallback image
                 category: body.category || "General"
-            } as any // eslint-disable-line @typescript-eslint/no-explicit-any
+            }
         });
 
         return NextResponse.json({ success: true, resource: newResource });

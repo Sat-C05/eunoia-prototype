@@ -58,63 +58,51 @@ export default function CreateReflectionModal({ isOpen, onClose, onPostCreated, 
     }
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="w-full max-w-lg bg-neutral-900 border border-white/10 rounded-2xl shadow-2xl overflow-hidden">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-md animate-in fade-in duration-300 font-heading">
+            <div className="w-full max-w-lg bg-surface-card border border-border rounded-[2rem] shadow-2xl overflow-hidden relative">
 
                 {/* Header */}
-                <div className="px-6 py-4 border-b border-white/5 flex justify-between items-center bg-white/5">
-                    <h2 className="text-lg font-bold text-white">
+                <div className="px-8 py-6 border-b border-border/50 flex justify-between items-center bg-surface-hover/30">
+                    <h2 className="text-xl font-bold text-foreground tracking-tight">
                         {step === "RULES" ? "Community Values" : "New Reflection"}
                     </h2>
-                    <button onClick={onClose} className="text-neutral-400 hover:text-white transition-colors">
+                    <button onClick={onClose} className="text-muted-foreground hover:text-foreground transition-colors p-2 hover:bg-surface-hover rounded-full">
                         ✕
                     </button>
                 </div>
 
                 {/* Content */}
-                <div className="p-6">
+                <div className="p-8">
                     {step === "RULES" ? (
-                        <div className="space-y-6">
-                            <div className="space-y-4 text-sm text-neutral-300 leading-relaxed">
-                                <p>To keep this space safe for everyone, please agree to the following:</p>
-                                <ul className="space-y-3 list-disc pl-4 marker:text-purple-400">
-                                    <li><strong className="text-white">Share experiences, not advice.</strong> Say &quot;I felt...&quot; instead of &quot;You should...&quot;</li>
-                                    <li><strong className="text-white">No medical claims.</strong> Do not diagnose or prescribe fixes.</li>
-                                    <li><strong className="text-white">No judgment.</strong> This is a place for observation, not debate.</li>
-                                    <li><strong className="text-white">Personal reflection only.</strong> Focus on your own journey.</li>
+                        <div className="space-y-8">
+                            <div className="space-y-4 text-sm text-muted-foreground leading-relaxed">
+                                <p className="font-medium text-foreground">To keep this space safe for everyone, please agree to the following:</p>
+                                <ul className="space-y-3 list-disc pl-4 marker:text-primary">
+                                    <li><strong className="text-foreground">Share experiences, not advice.</strong> Say &quot;I felt...&quot; instead of &quot;You should...&quot;</li>
+                                    <li><strong className="text-foreground">No medical claims.</strong> Do not diagnose or prescribe fixes.</li>
+                                    <li><strong className="text-foreground">No judgment.</strong> This is a place for observation, not debate.</li>
+                                    <li><strong className="text-foreground">Personal reflection only.</strong> Focus on your own journey.</li>
                                 </ul>
                             </div>
                             <button
                                 onClick={() => setStep("WRITE")}
-                                className="w-full py-3 bg-white text-black font-bold rounded-xl hover:bg-neutral-200 transition-colors"
+                                className="w-full py-4 bg-foreground text-background font-bold rounded-xl hover:scale-[1.01] transition-all shadow-lg text-sm uppercase tracking-wide"
                             >
                                 I Agree & Understand
                             </button>
                         </div>
                     ) : (
-                        <div className="space-y-4">
-                            <div className="space-y-2">
-                                <label className="text-xs font-bold text-neutral-500 uppercase tracking-wider">Title <span className="text-neutral-600 font-normal">(Optional)</span></label>
-                                <input
-                                    type="text"
-                                    value={title}
-                                    onChange={(e) => setTitle(e.target.value)}
-                                    placeholder="Here&apos;s my experience..., I&apos;m struggling with..., A win I had today..."
-                                    className="w-full bg-white/5 border border-white/5 rounded-xl px-4 py-3 text-white text-sm placeholder:text-neutral-600 focus:outline-none focus:ring-1 focus:ring-purple-500"
-                                    maxLength={100}
-                                />
-                            </div>
-
-                            <div className="space-y-2">
-                                <label className="text-xs font-bold text-neutral-500 uppercase tracking-wider">Topic</label>
+                        <div className="space-y-6">
+                            <div className="space-y-3">
+                                <label className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Topic</label>
                                 <div className="flex flex-wrap gap-2">
                                     {CATEGORIES.map(cat => (
                                         <button
                                             key={cat}
                                             onClick={() => setCategory(cat)}
-                                            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${category === cat
-                                                ? "bg-purple-500 text-white shadow-lg shadow-purple-500/20"
-                                                : "bg-white/5 text-neutral-400 hover:bg-white/10 hover:text-white"
+                                            className={`px-4 py-2 rounded-lg text-xs font-bold transition-all border ${category === cat
+                                                ? "bg-primary text-primary-foreground border-primary shadow-md"
+                                                : "bg-surface-hover/50 text-muted-foreground border-transparent hover:bg-surface-hover hover:text-foreground"
                                                 }`}
                                         >
                                             {cat}
@@ -123,22 +111,22 @@ export default function CreateReflectionModal({ isOpen, onClose, onPostCreated, 
                                 </div>
                             </div>
 
-                            <div className="space-y-2">
-                                <h2 className="text-sm font-bold text-neutral-500 uppercase tracking-widest mb-4">New Entry</h2>
+                            <div className="space-y-4">
                                 <input
                                     type="text"
                                     placeholder="Title your thought (optional)"
-                                    className="w-full bg-transparent text-xl md:text-2xl font-light text-white placeholder-neutral-700 outline-none mb-4"
+                                    className="w-full bg-transparent text-xl md:text-2xl font-bold text-foreground placeholder-muted-foreground/50 outline-none border-b border-border/50 pb-2 focus:border-primary transition-colors"
                                     value={title}
                                     onChange={(e) => setTitle(e.target.value)}
+                                    maxLength={100}
                                 />
                                 <textarea
-                                    placeholder="What&apos;s on your mind? Use &quot;I feel...&quot; or &quot;I noticed...&quot;"
-                                    className="w-full h-48 bg-transparent text-lg text-neutral-300 placeholder-neutral-700 resize-none outline-none leading-relaxed"
+                                    placeholder="What's on your mind? Use 'I feel...' or 'I noticed...'"
+                                    className="w-full h-48 bg-surface-hover/30 rounded-xl p-4 text-base text-foreground placeholder-muted-foreground/50 resize-none outline-none leading-relaxed border border-transparent focus:border-primary/50 transition-all focus:bg-surface-hover/50"
                                     value={content}
                                     onChange={(e) => setContent(e.target.value)}
                                 />
-                                <div className="text-right text-xs text-neutral-600">
+                                <div className="text-right text-xs text-muted-foreground font-mono">
                                     {content.length}/2000
                                 </div>
                             </div>
@@ -147,16 +135,16 @@ export default function CreateReflectionModal({ isOpen, onClose, onPostCreated, 
                                 <button
                                     onClick={handleSubmit}
                                     disabled={!content.trim() || isSubmitting}
-                                    className="w-full py-3 bg-purple-600 text-white font-bold rounded-xl hover:bg-purple-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                    className="w-full py-4 bg-primary text-primary-foreground font-bold rounded-xl hover:shadow-lg hover:shadow-primary/20 hover:scale-[1.01] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                                 >
                                     {isSubmitting ? (
                                         <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                                     ) : (
-                                        "Post anonymously"
+                                        "Post Anonymously"
                                     )}
                                 </button>
-                                <p className="text-center text-[10px] text-neutral-500 mt-3">
-                                    Your post will disappear from public view in 7 days.
+                                <p className="text-center text-[10px] text-muted-foreground mt-4 font-medium uppercase tracking-widest">
+                                    Posts expire automatically in 7 days
                                 </p>
                             </div>
                         </div>

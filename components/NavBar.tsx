@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useTheme } from "next-themes";
+import { useEffect, useState } from "react";
 
 const navLinks = [
     { href: '/', label: 'Home' },
@@ -13,24 +15,27 @@ const navLinks = [
 
 export function NavBar({ user }: { user?: { name?: string } | null }) {
     const pathname = usePathname();
+    const { theme, setTheme } = useTheme();
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => setMounted(true), []);
 
     return (
-        <header className="sticky top-0 z-50 border-b border-white/5 bg-neutral-950/80 backdrop-blur-xl transition-all duration-300">
-            <div className="mx-auto flex h-18 max-w-5xl items-center justify-between px-4 py-4">
+        <header className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-xl transition-all duration-300">
+            <div className="mx-auto flex h-18 max-w-7xl items-center justify-between px-6 py-4">
 
                 {/* Logo Area */}
                 <Link href="/" className="group flex items-center gap-3 relative">
-                    <div className="relative h-8 w-8">
-                        <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-sky-400 via-indigo-500 to-purple-500 blur-sm opacity-70 group-hover:opacity-100 group-hover:blur-md transition-all duration-500" />
-                        <div className="relative h-full w-full rounded-full bg-gradient-to-br from-sky-400 via-indigo-500 to-slate-900 shadow-inner" />
+                    <div className="relative h-9 w-9 bg-primary/10 rounded-xl flex items-center justify-center text-primary font-black text-lg shadow-sm border border-primary/20 group-hover:scale-105 transition-transform duration-300">
+                        E
                     </div>
-                    <span className="text-lg font-bold tracking-tight text-white group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-white/70 transition-all duration-300">
+                    <span className="text-xl font-bold tracking-tight text-foreground font-heading group-hover:text-primary transition-colors duration-300">
                         Eunoia
                     </span>
                 </Link>
 
                 {/* Desktop Navigation */}
-                <nav className="hidden md:flex items-center gap-1 p-1 rounded-full bg-white/[0.03] border border-white/[0.05]">
+                <nav className="hidden md:flex items-center gap-1 p-1.5 rounded-full bg-surface-card border border-border shadow-sm">
                     {navLinks.map((link) => {
                         const isActive =
                             pathname === link.href ||
@@ -40,51 +45,72 @@ export function NavBar({ user }: { user?: { name?: string } | null }) {
                             <Link
                                 key={link.href}
                                 href={link.href}
-                                className={`relative px-4 py-1.5 rounded-full text-xs font-medium transition-all duration-300 ${isActive
-                                    ? "text-white bg-white/10 shadow-[0_0_15px_rgba(255,255,255,0.1)]"
-                                    : "text-neutral-400 hover:text-white hover:bg-white/5"
+                                className={`relative px-5 py-2 rounded-full text-sm font-medium transition-all duration-300 ${isActive
+                                    ? "text-primary-foreground bg-primary shadow-md"
+                                    : "text-muted-foreground hover:text-foreground hover:bg-surface-hover"
                                     }`}
                             >
                                 {link.label}
-                                {isActive && (
-                                    <span className="absolute inset-0 rounded-full ring-1 ring-white/10" />
-                                )}
                             </Link>
                         );
                     })}
                 </nav>
 
-                <div className="hidden md:flex items-center gap-3">
+                <div className="hidden md:flex items-center gap-4">
+                    {/* Theme Toggle */}
+                    {mounted && (
+                        <button
+                            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                            className="h-9 w-9 rounded-full bg-surface-card border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-surface-hover transition-colors"
+                            aria-label="Toggle Theme"
+                        >
+                            {theme === "dark" ? "🌙" : "☀️"}
+                        </button>
+                    )}
+
                     {user ? (
                         <div className="flex items-center gap-3">
-                            <span className="text-xs text-neutral-400">
-                                Hi, <span className="text-white font-bold">{user.name || 'Student'}</span>
+                            <span className="text-xs text-muted-foreground">
+                                Hi, <span className="text-foreground font-bold">{user.name || 'Student'}</span>
                             </span>
                             <button
                                 onClick={async () => {
                                     await fetch('/api/auth/student-logout', { method: 'POST' });
                                     window.location.href = '/login';
                                 }}
-                                className="px-4 py-1.5 rounded-full text-xs font-medium bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-all border border-red-500/20"
+                                className="px-4 py-2 rounded-full text-xs font-bold bg-surface-card text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 transition-all border border-border hover:border-red-500/20"
                             >
                                 Sign Out
                             </button>
                         </div>
                     ) : (
-                        <Link href="/login" className="px-4 py-1.5 rounded-full text-xs font-medium bg-white/10 text-white hover:bg-white/20 transition-all border border-white/5">
+                        <Link href="/login" className="px-5 py-2 rounded-full text-xs font-bold bg-foreground text-background hover:opacity-90 transition-all shadow-md">
                             Log In
                         </Link>
                     )}
-                    {/* Temp Admin Button - Only show if NO student user (or keep it, doesn't matter) */}
-                    <Link href="/admin" className="px-3 py-1.5 text-neutral-500 hover:text-red-400 transition-colors" title="Admin Portal">
-                        🔒
+
+                    {/* Admin Access Anchor */}
+                    <Link
+                        href="/admin"
+                        className="h-9 w-9 rounded-full bg-surface-card border border-border flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-surface-hover transition-all group relative"
+                        title="Admin Access"
+                    >
+                        <span className="text-lg">🛡️</span>
                     </Link>
                 </div>
 
-                {/* Mobile Menu Trigger (Simple for now) */}
-                <div className="md:hidden">
-                    <div className="h-8 w-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
-                        <span className="text-white/50">☰</span>
+                {/* Mobile Menu Trigger */}
+                <div className="md:hidden flex items-center gap-4">
+                    {mounted && (
+                        <button
+                            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                            className="h-9 w-9 rounded-full bg-surface-card border border-border flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+                        >
+                            {theme === "dark" ? "🌙" : "☀️"}
+                        </button>
+                    )}
+                    <div className="h-9 w-9 rounded-full bg-surface-card border border-border flex items-center justify-center">
+                        <span className="text-foreground/50">☰</span>
                     </div>
                 </div>
 
