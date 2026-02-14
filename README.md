@@ -83,7 +83,7 @@ This project was developed using an **AI-assisted engineering workflow**, where 
 
 *   **Next.js API Routes**
 *   **Prisma ORM**
-*   **SQLite** (Prototype Database)
+*   **PostgreSQL** (Neon Database)
 
 ### Deployment
 
@@ -103,7 +103,7 @@ graph TD
     API --> Auth[Auth Logic]
     API --> Prisma[Prisma ORM]
     
-    Prisma --> DB[(SQLite Database)]
+    Prisma --> DB[(PostgreSQL Database)]
 ```
 
 ---
@@ -151,7 +151,7 @@ npm install
 ### 3. Create `.env`
 
 ```env
-DATABASE_URL="file:./prisma/dev.db"
+DATABASE_URL="postgresql://user:password@endpoint.neon.tech/neondb?sslmode=require"
 ```
 
 ### 4. Run Migrations
@@ -175,7 +175,7 @@ Runs at **[http://localhost:3000](http://localhost:3000)**.
 1.  Push your code to a GitHub repository.
 2.  Import the project into Vercel.
 3.  Add the Environment Variable:
-    *   `DATABASE_URL="file:./prisma/dev.db"`
+    *   `DATABASE_URL="postgresql://..."`
 4.  Deploy! (Vercel typically handles the build command automatically).
 
 ---
