@@ -64,14 +64,14 @@ export default function CursorEffect() {
                 const dy = mouseY - this.y;
                 const dist = Math.sqrt(dx * dx + dy * dy);
 
-                const maxDist = 40; // Extremely tight radius
-                let alpha = 0.05; // Base visibility
+                const maxDist = 120; // 120px Radius
+                let alpha = 0.05;
                 let scale = 1;
 
                 if (dist < maxDist) {
                     const intensity = (maxDist - dist) / maxDist;
-                    alpha += intensity * 1; // Maximum brightness
-                    scale = 1 + intensity * 1.5; // Significant pop
+                    alpha += intensity * 0.8;
+                    scale = 1 + intensity * 1.2;
                 }
 
                 ctx.beginPath();
