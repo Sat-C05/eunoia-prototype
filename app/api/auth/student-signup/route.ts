@@ -40,10 +40,12 @@ export async function POST(req: NextRequest) {
             },
         });
 
-        // Omit password from response
-        const { password: _, ...userWithoutPassword } = newUser;
-
-        return NextResponse.json(userWithoutPassword, { status: 201 });
+        return NextResponse.json({
+            id: newUser.id,
+            name: newUser.name,
+            email: newUser.email,
+            createdAt: newUser.createdAt
+        }, { status: 201 });
 
     } catch (error) {
         console.error("Signup Error:", error);
