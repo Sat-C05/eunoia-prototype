@@ -21,7 +21,10 @@ export default function ModerationTab() {
     async function loadFlaggedPosts() {
         try {
             setIsLoading(true);
-            const res = await fetch("/api/admin/moderation/posts");
+            const res = await fetch("/api/admin/moderation/posts", {
+                cache: "no-store",
+                headers: { "Pragma": "no-cache" }
+            });
             if (res.ok) {
                 const data = await res.json();
                 setPosts(data.posts || []);
@@ -32,13 +35,28 @@ export default function ModerationTab() {
     }
 
     async function handleAction(id: string, action: 'DELETE' | 'RESTORE') {
-        const url = `/api/admin/moderation/posts/${id}`;
-        await fetch(url, {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ action })
-        });
+        // 1. Optimistic Update: Remove from list immediately
         setPosts(prev => prev.filter(p => p.id !== id));
+
+        // 2. Perform API Call
+        try {
+            const url = `/api/admin/moderation/posts/${id}`;
+            const res = await fetch(url, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ action })
+            });
+
+            if (!res.ok) {
+                const errData = await res.json().catch(() => ({}));
+                throw new Error(errData.error || "Action failed");
+            }
+        } catch (error) {
+            console.error(error);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            alert(`Failed: ${(error as any).message}`);
+            loadFlaggedPosts();
+        }
     }
 
     if (isLoading) return <div className="p-8 text-center text-muted-foreground animate-pulse">Loading moderation queue...</div>;

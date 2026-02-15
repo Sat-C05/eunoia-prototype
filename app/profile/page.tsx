@@ -14,18 +14,31 @@ export default function ProfilePage() {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [profileData, setProfileData] = useState<any>(null);
     const [loading, setLoading] = useState(true);
+    const [cursorEnabled, setCursorEnabled] = useState(true);
 
     useEffect(() => {
         setUserId(getOrCreateClientUserId());
         setMounted(true);
         fetchProfile();
+
+        const stored = localStorage.getItem("cursorEffectEnabled");
+        if (stored !== null) setCursorEnabled(stored === "true");
     }, []);
+
+    const toggleCursor = (enabled: boolean) => {
+        setCursorEnabled(enabled);
+        localStorage.setItem("cursorEffectEnabled", String(enabled));
+        window.dispatchEvent(new Event("cursor-effect-toggle"));
+    };
 
     const fetchProfile = async () => {
         setLoading(true);
         try {
             const anonId = getOrCreateClientUserId();
-            const res = await fetch(`/api/user/profile?anonymousId=${anonId}`);
+            const res = await fetch(`/api/user/profile?anonymousId=${anonId}`, {
+                cache: "no-store",
+                headers: { "Pragma": "no-cache" }
+            });
             if (res.ok) {
                 const data = await res.json();
                 setProfileData(data);
@@ -45,7 +58,7 @@ export default function ProfilePage() {
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `eunoia-profile-${new Date().toISOString().split("T")[0]}.json`;
+            a.download = `eunoia-profile-${new Date().toISOString().split("T")[0]}.html`;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
@@ -275,6 +288,25 @@ export default function ProfilePage() {
                                         <button onClick={() => setTheme("light")} className={`p-4 rounded-xl border font-medium transition-all ${theme === 'light' ? 'bg-primary text-primary-foreground border-primary shadow-lg scale-105' : 'bg-surface-hover text-muted-foreground border-border hover:border-primary/50'}`}>
                                             ☀️ Light Mode
                                         </button>
+                                    </div>
+                                </div>
+
+                                <div className="p-8 rounded-[2rem] bg-surface-card border border-border space-y-6">
+                                    <h3 className="font-bold text-foreground text-lg">Visual Effects</h3>
+                                    <div className="flex items-center justify-between">
+                                        <div>
+                                            <p className="font-medium text-foreground">Mouse Attractor</p>
+                                            <p className="text-sm text-muted-foreground">Show particle effects around your cursor.</p>
+                                        </div>
+                                        <label className="relative inline-flex items-center cursor-pointer">
+                                            <input
+                                                type="checkbox"
+                                                className="sr-only peer"
+                                                checked={cursorEnabled}
+                                                onChange={(e) => toggleCursor(e.target.checked)}
+                                            />
+                                            <div className="w-11 h-6 bg-surface-hover peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                                        </label>
                                     </div>
                                 </div>
 

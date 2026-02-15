@@ -20,11 +20,19 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
         //    Let's require userId match for now for strict Profile CRUD.
 
         let isOwner = false;
-        if (session && session.userId && post.userId === session.userId) {
+
+        // Check for Admin Session (Cookie)
+        const adminSession = req.cookies.get("admin_session");
+
+        if (adminSession) {
+            isOwner = true; // Admin can delete anything
+        }
+        // Check for User Ownership
+        else if (session && session.userId && post.userId === session.userId) {
             isOwner = true;
-        } else {
-            // Check anonymous ownership if provided in safe way? 
-            // For now, let's allow deletes if the user sends the matching anonymousId in a header 'X-Anonymous-ID'
+        }
+        // Check for Anonymous Ownership
+        else {
             const clientAnonId = req.headers.get("x-anonymous-id");
             if (clientAnonId && post.anonymousId === clientAnonId) {
                 isOwner = true;
@@ -35,7 +43,23 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
             return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
         }
 
+        // 1. Check if exists
+        const existing = await prisma.post.findUnique({ where: { id: postId } });
+        if (!existing) {
+            return NextResponse.json({ success: true });
+        }
+
+        // 2. Delete
         await prisma.post.delete({ where: { id: postId } });
+
+        // 3. Verify
+        const check = await prisma.post.findUnique({ where: { id: postId } });
+        if (check) {
+            console.error(`[Community DELETE] CRITICAL: Post ${postId} still exists after delete!`);
+            return NextResponse.json({ error: "Deletion failed verification" }, { status: 500 });
+        }
+
+        console.log(`[Community DELETE] Successfully deleted post ${postId}`);
         return NextResponse.json({ success: true });
 
     } catch {

@@ -45,7 +45,7 @@ type UserRow = {
     };
 };
 
-type Tab = 'overview' | 'assessments' | 'bookings' | 'moods' | 'users' | 'moderation';
+type Tab = 'overview' | 'assessments' | 'bookings' | 'moods' | 'users' | 'moderation' | 'settings';
 
 // --- Helpers ---
 
@@ -61,6 +61,7 @@ export default function AdminDashboardClient() {
     const [bookings, setBookings] = useState<BookingRow[]>([]);
     const [moods, setMoods] = useState<MoodRow[]>([]);
     const [users, setUsers] = useState<UserRow[]>([]);
+    const [config, setConfig] = useState({ voiceEnabled: true });
     const [isLoading, setIsLoading] = useState(true);
 
     const [assessmentFilter, setAssessmentFilter] = useState("ALL");
@@ -69,23 +70,26 @@ export default function AdminDashboardClient() {
     async function loadData() {
         try {
             setIsLoading(true);
-            const [, assessmentsRes, bookingsRes, moodsRes, usersRes] = await Promise.all([
+            const [, assessmentsRes, bookingsRes, moodsRes, usersRes, configRes] = await Promise.all([
                 fetch("/api/admin/severity-summary", { cache: "no-store" }),
                 fetch("/api/admin/assessments/recent?limit=200", { cache: "no-store" }),
                 fetch("/api/admin/bookings/recent?limit=100", { cache: "no-store" }),
                 fetch("/api/admin/moods/recent?limit=100", { cache: "no-store" }),
                 fetch("/api/admin/users", { cache: "no-store" }),
+                fetch("/api/config", { cache: "no-store" }),
             ]);
 
             const assessmentsJson = assessmentsRes.ok ? await assessmentsRes.json() : { assessments: [] };
             const bookingsJson = bookingsRes.ok ? await bookingsRes.json() : { bookings: [] };
             const moodsJson = moodsRes.ok ? await moodsRes.json() : { moods: [] };
             const usersJson = usersRes.ok ? await usersRes.json() : { users: [] };
+            const configJson = configRes.ok ? await configRes.json() : { voiceEnabled: true };
 
             setAssessments(assessmentsJson.assessments ?? []);
             setBookings(bookingsJson.bookings ?? []);
             setMoods(moodsJson.moods ?? []);
             setUsers(usersJson.users ?? []);
+            setConfig(configJson);
         } finally {
             setIsLoading(false);
         }
@@ -160,6 +164,16 @@ export default function AdminDashboardClient() {
         setUsers((prev) => prev.filter((u) => u.id !== id));
     }
 
+    async function handleToggleVoice(enabled: boolean) {
+        const newConfig = { ...config, voiceEnabled: enabled };
+        setConfig(newConfig); // Optimistic
+        await fetch("/api/config", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(newConfig)
+        });
+    }
+
     // --- User Details (Future) ---
     async function handleViewUserBookings(user: UserRow) {
         console.log("View user", user);
@@ -206,6 +220,7 @@ export default function AdminDashboardClient() {
                     <SidebarItem id="moods" label="Vibe Check" icon="☁️" />
                     <SidebarItem id="users" label="Users" icon="👥" />
                     <SidebarItem id="moderation" label="Moderation" icon="🛡️" />
+                    <SidebarItem id="settings" label="Settings" icon="⚙️" />
                 </nav>
 
                 <div className="px-4 pt-4 border-t border-border/50 space-y-3">
@@ -502,6 +517,33 @@ export default function AdminDashboardClient() {
                 )}
 
                 {activeTab === 'moderation' && <ModerationTab />}
+
+                {activeTab === 'settings' && (
+                    <div className="space-y-8 animate-in fade-in duration-500">
+                        <div className="border-b border-border/50 pb-6">
+                            <h2 className="text-3xl font-black text-foreground tracking-tight">System Settings</h2>
+                            <p className="text-muted-foreground font-medium">Configure platform features.</p>
+                        </div>
+
+                        <div className="p-8 rounded-[2rem] bg-surface-card border border-border space-y-6 max-w-2xl">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <h3 className="text-lg font-bold text-foreground">Voice-to-Text Journaling</h3>
+                                    <p className="text-sm text-muted-foreground">Allow students to use microphone for journal entries.</p>
+                                </div>
+                                <label className="relative inline-flex items-center cursor-pointer">
+                                    <input
+                                        type="checkbox"
+                                        className="sr-only peer"
+                                        checked={config.voiceEnabled}
+                                        onChange={(e) => handleToggleVoice(e.target.checked)}
+                                    />
+                                    <div className="w-11 h-6 bg-surface-hover peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </main>
         </div>
     );

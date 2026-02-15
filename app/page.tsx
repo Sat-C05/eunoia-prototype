@@ -27,20 +27,21 @@ export default function HomePage() {
             ⭐ Professional Student Support
           </div>
 
-          <h1 className="text-5xl md:text-7xl font-black tracking-tight text-foreground leading-[1.1] font-heading drop-shadow-lg">
-            Find Your <br />
-            {/* JEWEL TONE GRADIENT */}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-700 via-indigo-700 to-amber-600 dark:from-indigo-400 dark:via-violet-400 dark:to-amber-400">
-              Balance.
-            </span>
-          </h1>
+          <div className="space-y-2">
+            <h1 className="text-5xl md:text-7xl font-black tracking-tight text-foreground leading-[1.1] font-heading drop-shadow-lg">
+              Find Your <br />
+              {/* JEWEL TONE GRADIENT */}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-700 via-indigo-700 to-amber-600 dark:from-indigo-400 dark:via-violet-400 dark:to-amber-400">
+                Balance.
+              </span>
+            </h1>
 
-          <p className="text-lg md:text-xl text-muted-foreground leading-relaxed max-w-2xl mx-auto font-medium">
-            The trusted platform for clarity, stability, and growth. <br className="hidden md:block" />
-            <span className="text-foreground font-semibold">Secure. Professional. Confidential.</span>
-          </p>
+            <h2 className="text-2xl md:text-3xl font-bold text-muted-foreground/80 tracking-tight max-w-3xl mx-auto pt-4 pb-2">
+              Privacy-powered <span className="text-foreground">mentor haven</span> for students.
+            </h2>
+          </div>
 
-          <div className="flex flex-wrap justify-center gap-4 pt-6">
+          <div className="flex flex-wrap justify-center gap-4 pt-4 pb-2">
             <Link
               href="/assessment"
               className="group relative inline-flex items-center justify-center rounded-xl bg-primary text-primary-foreground px-8 py-3.5 text-lg font-bold transition-all duration-300 hover:scale-[1.02] hover:shadow-lg shadow-indigo-500/20"
@@ -54,6 +55,10 @@ export default function HomePage() {
               Explore Resources
             </Link>
           </div>
+
+          <p className="text-sm font-bold uppercase tracking-widest text-muted-foreground/60 pt-4">
+            Secure • Professional • Confidential
+          </p>
         </div>
       </section>
 

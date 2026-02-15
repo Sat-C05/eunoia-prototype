@@ -5,6 +5,8 @@ import { AppShell } from '@/components/AppShell';
 import { getSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import GuideWidget from '@/components/guide/GuideWidget';
+
+import CursorEffect from "@/components/ui/CursorEffect";
 import { ThemeProvider } from '@/components/ThemeProvider';
 
 export const metadata: Metadata = {
@@ -51,6 +53,7 @@ export default async function RootLayout({
       <body className={`${inter.variable} ${outfit.variable}`}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <AppShell user={user}>
+            <CursorEffect />
             {children}
             <GuideWidget />
           </AppShell>

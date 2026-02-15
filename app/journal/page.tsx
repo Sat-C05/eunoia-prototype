@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { getOrCreateClientUserId } from "@/lib/clientUserId";
 import { useNotifications } from "@/components/NotificationProvider";
+import SpeechInput from "@/components/journal/SpeechInput";
 
 // Prompts to cycle through
 const PROMPTS = [
@@ -15,14 +16,22 @@ const PROMPTS = [
     "Describe your current mood as a landscape."
 ];
 
+interface JournalEntry {
+    id: string;
+    title: string;
+    content: string;
+    prompt: string;
+    createdAt: Date | string; // Handle potentially string dates from API
+}
+
 export default function JournalPage() {
     const [prompt, setPrompt] = useState("");
     const [content, setContent] = useState("");
     const [title, setTitle] = useState("");
     const [isSaving, setIsSaving] = useState(false);
     const [userId, setUserId] = useState("");
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const [entries, setEntries] = useState<any[]>([]);
+
+    const [entries, setEntries] = useState<JournalEntry[]>([]);
     const { notify } = useNotifications();
 
     // New State for "Reading Mode"
@@ -103,8 +112,7 @@ export default function JournalPage() {
         }
     };
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const loadEntry = (entry: any) => {
+    const loadEntry = (entry: JournalEntry) => {
         setViewingId(entry.id);
         setTitle(entry.title || "");
         setContent(entry.content);
@@ -188,13 +196,16 @@ export default function JournalPage() {
 
                         {!viewingId && (
                             <div className="flex justify-end pt-4">
-                                <button
-                                    onClick={handleSave}
-                                    disabled={isSaving || !content.trim()}
-                                    className="px-8 py-3 bg-foreground text-background font-bold rounded-xl hover:scale-105 transition-transform disabled:opacity-50 shadow-lg"
-                                >
-                                    {isSaving ? "Saving..." : "Save Entry"}
-                                </button>
+                                <div className="flex gap-2">
+                                    <SpeechInput onSpeechResult={(text) => setContent(prev => prev + (prev ? " " : "") + text)} />
+                                    <button
+                                        onClick={handleSave}
+                                        disabled={isSaving || !content.trim()}
+                                        className="px-8 py-3 bg-foreground text-background font-bold rounded-xl hover:scale-105 transition-transform disabled:opacity-50 shadow-lg"
+                                    >
+                                        {isSaving ? "Saving..." : "Save Entry"}
+                                    </button>
+                                </div>
                             </div>
                         )}
                     </div>
