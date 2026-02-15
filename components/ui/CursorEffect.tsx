@@ -64,7 +64,7 @@ export default function CursorEffect() {
                 const dy = mouseY - this.y;
                 const dist = Math.sqrt(dx * dx + dy * dy);
 
-                const maxDist = 120; // 120px Radius
+                const maxDist = 160; // 160px Radius
                 let alpha = 0.05;
                 let scale = 1;
 
@@ -118,7 +118,7 @@ export default function CursorEffect() {
             dots.forEach(dot => dot.draw());
 
             // Larger Spotlight Glow
-            const gradient = ctx.createRadialGradient(mouseX, mouseY, 0, mouseX, mouseY, 200);
+            const gradient = ctx.createRadialGradient(mouseX, mouseY, 0, mouseX, mouseY, 300);
             gradient.addColorStop(0, "rgba(255, 255, 255, 0.08)");
             gradient.addColorStop(1, "transparent");
             ctx.fillStyle = gradient;
