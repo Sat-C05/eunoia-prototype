@@ -117,9 +117,9 @@ export default function CursorEffect() {
 
             dots.forEach(dot => dot.draw());
 
-            // Micro-Spotlight Glow
-            const gradient = ctx.createRadialGradient(mouseX, mouseY, 0, mouseX, mouseY, 80);
-            gradient.addColorStop(0, "rgba(255, 255, 255, 0.1)");
+            // Larger Spotlight Glow
+            const gradient = ctx.createRadialGradient(mouseX, mouseY, 0, mouseX, mouseY, 200);
+            gradient.addColorStop(0, "rgba(255, 255, 255, 0.08)");
             gradient.addColorStop(1, "transparent");
             ctx.fillStyle = gradient;
             ctx.fillRect(0, 0, canvas.width, canvas.height);
