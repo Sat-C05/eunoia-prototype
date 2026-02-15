@@ -1,6 +1,6 @@
 import { createHmac, timingSafeEqual } from "crypto";
 import { cookies } from "next/headers";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 
 const SECRET_KEY = process.env.JWT_SECRET || "student-secret-key-change-me";
 
