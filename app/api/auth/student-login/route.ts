@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { verifyPassword, createSession } from "@/lib/auth";
+import { verifyPassword, createSession, hashPassword } from "@/lib/auth";
 
 export async function POST(req: NextRequest) {
     try {
@@ -22,6 +22,16 @@ export async function POST(req: NextRequest) {
 
         if (!isValid) {
             return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
+        }
+
+        // Auto-migrate legacy passwords to bcrypt
+        if (!user.password.startsWith("$2")) {
+            console.log(`Migrating user ${user.id} to bcrypt...`);
+            const newHash = await hashPassword(password);
+            await prisma.user.update({
+                where: { id: user.id },
+                data: { password: newHash },
+            });
         }
 
         await createSession(user.id);

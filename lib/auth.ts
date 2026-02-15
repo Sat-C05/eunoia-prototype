@@ -1,5 +1,6 @@
 import { createHmac, timingSafeEqual } from "crypto";
 import { cookies } from "next/headers";
+import bcrypt from "bcrypt";
 
 const SECRET_KEY = process.env.JWT_SECRET || "student-secret-key-change-me";
 
@@ -65,14 +66,18 @@ function verifyJwt(token: string): { userId: string } | null {
 // --- Auth Helpers ---
 
 export async function hashPassword(password: string): Promise<string> {
-    // Determine which hash to use - simple SHA256 for demo robustness
-    const hash = createHmac('sha256', SECRET_KEY).update(password).digest('hex');
-    return hash;
+    return await bcrypt.hash(password, 10);
 }
 
 export async function verifyPassword(plain: string, hashed: string): Promise<boolean> {
-    const newHash = await hashPassword(plain);
-    return newHash === hashed;
+    // Check if it's a bcrypt hash (starts with $2)
+    if (hashed.startsWith("$2")) {
+        return await bcrypt.compare(plain, hashed);
+    }
+
+    // Legacy HMAC-SHA256 fallback
+    const legacyHash = createHmac('sha256', SECRET_KEY).update(plain).digest('hex');
+    return legacyHash === hashed;
 }
 
 export async function createSession(userId: string) {
